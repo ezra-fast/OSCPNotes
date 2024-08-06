@@ -3,18 +3,23 @@
 **DNS Enumeration:**
 
 `host www.target.domain`
+
 `host -t txt,mx domain.com`
 
 `dnsrecon -d megacorpone.com -t std`
+
 `dnsrecon -d megacorpone.com -D list.txt -t brt`
+
 `dnsenum megacorpone.com`
 
 `nslookup mail2.megacorpone.com`
+
 `nslookup -type=TXT info.megacorpone.com 8.8.8.8`
 
 **TCP/UDP Port Scanning:**
 
 `nc -nvv -w 1 -z 10.0.0.74 1-1000`
+
 `nc -nv -u -z -w 1 10.0.0.74 1-1000`
 
 `for ip in $(seq 100 200); do nc -nv -z -w 1 -u 192.168.45.44 $ip; done`
@@ -22,10 +27,13 @@
 `sudo netdiscover -r 10.0.0.0/24`
 
 `sudo nmap -v -sn 192.168.44.0-253 -oG sweep.txt`
+
 `nmap --script-help http-headers`
+
 `sudo nmap -p 445 --script=smb-enum-users 192.168.44.30 -Pn`
 
 `sudo nmap -sV -sC -sU 192.168.44.30 -p 1-1000 -Pn | tee scan.txt`
+
 `sudo masscan -p1-65535,U1:65535 192.168.44.30 --rate=1000 -e tun0`
 
 `Test-NetConnection -Port 445 192.168.45.33`
@@ -33,9 +41,10 @@
 `1..1024 | % {echo ((New-Object Net.Sockets.TcpClient).Connect("192.168.44.30", $_)) "TCP port $_ is open"} 2>$null` 
 
 **no TTY shell:**
-
+```
 (dir 2>&1 *`|echo CMD);&<# rem #>echo PowerShell (am I running in cmd or PS?)
-	- am I running in PowerShell or cmd?
+```
+- am I running in PowerShell or cmd?
 
 `python -c 'import pty; pty.spawn("/bin/bash")'`
 
@@ -56,31 +65,42 @@
 **SMTP Enumeration:**
 
 `nc -nv 192.168.44.30 25`
+
 `VRFY root`
+
 `VRFY Administrator`
 
 `Test-NetConnection -Port 25 192.168.44.30`
 
 `dism /online /Enable-Feature /FeatureName:TelnetClient`
-	`- grab the telnet client; client can also be transferred from the attacker`
+
+ `- grab the telnet client; client can also be transferred from the attacker`
+
 `telnet 192.168.44.30 25`
 
 **SNMP Enumeration:**
 
 `sudo nmap -sU -p 161 --open -oG snmp_open.txt`
+
 `sudo nmap --script-help=*snmp* 192.168.44.30`
 
 `for ip in $(seq 1 254); do echo 192.168.44.\$ip; done > ips.txt`
+
 `onesixtyone -c community -i ips.txt`
-	- common community strings: public, private, manager
+
+ - common community strings: public, private, manager
 
 `snmpwalk -c public -v1 -t 10 192.168.44.30 -Oa` 
 
 `snmpwalk -c public -v1 192.168.44.30 1.3.6.1.4.1.77.1.2.25`
-	- enumerate Windows users based on the community string "public"
-	- 1.3.6.1.2.1.25.6.3.1.2 for installed software
-	- 1.3.6.1.2.1.6.13.1.3 for open TCP ports
-	- 1.3.6.1.2.1.25.4.2.1.2 for running processes
+
+ - enumerate Windows users based on the community string "public"
+
+ - 1.3.6.1.2.1.25.6.3.1.2 for installed software
+
+ - 1.3.6.1.2.1.6.13.1.3 for open TCP ports
+
+ - 1.3.6.1.2.1.25.4.2.1.2 for running processes
 
 **Vulnerability Scanning:**
 
