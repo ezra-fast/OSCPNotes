@@ -135,7 +135,8 @@ PostgreSQL:
 **Web Application Attacks:**
 
 1. Enumerating Web Applications:
-	a. directories:
+	
+ 	a. directories:
 
 	`whatweb https://www.sait.ca`
 	
@@ -181,6 +182,12 @@ PostgreSQL:
 	`curl -d '{"password":"lab","username":"offsec","email":"[pwn@offsec.com](mailto:pwn@offsec.com)","admin":"True"}' -H 'Content-Type: application/json' http://192.168.0.21:5001/users/v1/register`
 
 	`curl -i <endpoint> -H 'Authorization: OAuth <token>'`
+
+	e. parameters and submitted forms:
+
+	`gospider -s "https://google.com" -t 10 -d 3 --sitemap --robots`
+
+	`gospider -s "https://google.com" -t 10 -d 3 --sitemap --robots  | grep "\[form\]"`
 
 3. XSS:
 	
