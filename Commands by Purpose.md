@@ -48,6 +48,15 @@
 
 `python -c 'import pty; pty.spawn("/bin/bash")'`
 
+**Miscellaneous**
+```
+PostgreSQL:
+	- psql -h <target-IP> -p <target-port> -U <username>
+	- \l					(list available databases)
+	- \c database03				(connect to database03)
+	- select * from cwd_user;               (retrieve password hashes)
+```
+
 **SMB Enumeration:**
 
 `sudo nmap -v -p 139,445 -oG smb.txt 192.168.44.0/24`
