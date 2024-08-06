@@ -42,9 +42,7 @@
 
 **no TTY shell:**
 
-```(dir 2>&1 *\`|echo CMD);&<# rem #>echo PowerShell (am I running in cmd or PS?)```
-
-	- am I running in PowerShell or cmd?
+```(dir 2>&1 *`|echo CMD);&<# rem #>echo PowerShell (am I running in cmd or PS?)```
 
 `python -c 'import pty; pty.spawn("/bin/bash")'`
 
