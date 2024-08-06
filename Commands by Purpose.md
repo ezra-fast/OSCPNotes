@@ -19,6 +19,7 @@
 **TCP/UDP Port Scanning:**
 
 `nc -nvv -w 1 -z 10.0.0.74 1-1000`
+
 `nc -nv -u -z -w 1 10.0.0.74 1-1000`
 
 `for ip in $(seq 100 200); do nc -nv -z -w 1 -u 192.168.45.44 $ip; done`
@@ -26,10 +27,13 @@
 `sudo netdiscover -r 10.0.0.0/24`
 
 `sudo nmap -v -sn 192.168.44.0-253 -oG sweep.txt`
+
 `nmap --script-help http-headers`
+
 `sudo nmap -p 445 --script=smb-enum-users 192.168.44.30 -Pn`
 
 `sudo nmap -sV -sC -sU 192.168.44.30 -p 1-1000 -Pn | tee scan.txt`
+
 `sudo masscan -p1-65535,U1:65535 192.168.44.30 --rate=1000 -e tun0`
 
 `Test-NetConnection -Port 445 192.168.45.33`
@@ -39,7 +43,8 @@
 **no TTY shell:**
 
 (dir 2>&1 *`|echo CMD);&<# rem #>echo PowerShell (am I running in cmd or PS?)
-	- am I running in PowerShell or cmd?
+
+ 	- am I running in PowerShell or cmd?
 
 `python -c 'import pty; pty.spawn("/bin/bash")'`
 
