@@ -1362,6 +1362,10 @@ https://cheatsheet.haax.fr/windows-systems/exploitation/crackmapexec/
 
 .\kerbrute passwordspray -d domain.local usernames.lst "Password1#"
 	- usernames.lst has to be ANSI encoded (Notepad > Save As)
+
+ldapdomaindump 10.0.0.174 -u domain.local\\alex -p Password1#
+ldapsearch -LLL -x -H ldap://domain.local -b '' -s base '(objectClass=*)'
+ldapsearch -x -H ldap://domain.local -D "domain.local\\alex" -w Password1# -b "DC=domain,DC=local"
 ```
 
 **Exploiting Active Directory Authentication**
