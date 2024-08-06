@@ -3,13 +3,17 @@
 **DNS Enumeration:**
 
 `host www.target.domain`
+
 `host -t txt,mx domain.com`
 
 `dnsrecon -d megacorpone.com -t std`
+
 `dnsrecon -d megacorpone.com -D list.txt -t brt`
+
 `dnsenum megacorpone.com`
 
 `nslookup mail2.megacorpone.com`
+
 `nslookup -type=TXT info.megacorpone.com 8.8.8.8`
 
 **TCP/UDP Port Scanning:**
