@@ -682,6 +682,8 @@ c $1 $3 $7 $#
 
  	4. `. .\PrivescCheck.ps1; Invoke-PrivescCheck -Extended`
 
+     	5. `.\winpeas.exe log=WINPEAS_MS01_OUTPUT.txt`
+
 3. Windows Services for privilege escalation:
 
  	1. `services.msc, Get-Service, Get-CimInstance`
