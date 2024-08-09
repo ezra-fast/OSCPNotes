@@ -678,6 +678,8 @@ c $1 $3 $7 $#
 	
  	3. `Get-Content Output.txt | Select-String -Pattern "Installed Product" -Context 0, 60`                 (parse output files)
 
+ 	4. `. .\PrivescCheck.ps1; Invoke-PrivescCheck -Extended`
+
 3. Windows Services for privilege escalation:
 
  	1. `services.msc, Get-Service, Get-CimInstance`
