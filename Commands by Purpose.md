@@ -146,7 +146,9 @@ PostgreSQL:
 	
 	`gobuster dir -u google.com -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt`
 
-	`gobuster dir -u http://<ip> -x pdf,txt,php -w /usr/share/wordlists/dirb/common.txt`
+	`feroxbuster -u http://10.0.0.174:80/ -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt --filter-status 404`
+
+	`gobuster dir -u http://10.0.0.174 -x pdf,txt,php -w /usr/share/wordlists/dirb/common.txt`
 	
 	`ffuf -u https://arctic.htb:8500/FUZZ -w /usr/share/wordlists/dirbuster/directory-list-lowercase-2.3-medium.txt  -t 100 -recursion -recursion-depth 3 -r -v`
 
