@@ -136,7 +136,7 @@ PostgreSQL:
 
 1. Enumerating Web Applications:
 	
- 	a. directories:
+ 	a. directories and files:
 
 	`whatweb https://www.sait.ca`
 	
@@ -145,6 +145,8 @@ PostgreSQL:
  	`dirb https://10.0.2.15:12380 /usr/share/wordlists/dirb/common.txt`
 	
 	`gobuster dir -u google.com -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt`
+
+	`gobuster dir -u http://<ip> -x pdf,txt,php -w /usr/share/wordlists/dirb/common.txt`
 	
 	`ffuf -u https://arctic.htb:8500/FUZZ -w /usr/share/wordlists/dirbuster/directory-list-lowercase-2.3-medium.txt  -t 100 -recursion -recursion-depth 3 -r -v`
 
