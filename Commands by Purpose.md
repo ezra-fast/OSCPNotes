@@ -733,16 +733,18 @@ c $1 $3 $7 $#
    			3. Path contains dll
 		
   		3. `Restart-Service TargetService`             (DLL loading happens at conception)
+  
+       			1. sc create Scheduler binpath= "C:\Users\offsec\Scheduler.exe"
 		
-  		4. `x86_64-w64-mingw32-gcc malDll.cpp --shared -o RelyOnMe.dll`
+  		5. `x86_64-w64-mingw32-gcc malDll.cpp --shared -o RelyOnMe.dll`
 		
    			1. the DLL must have the same name as the missing dependency
 			
    			2. use this [malicious DLL](https://github.com/ezra-fast/OSCPPrep/blob/master/Windows/malicious_dll_2.cpp)
 		
-  		5. place the compiled DLL along the DLL search order
+  		6. place the compiled DLL along the DLL search order
 		
-  		6. `Restart-Service TargetService`
+  		7. `Restart-Service TargetService`
 	
  	7. unquoted service paths:                         (`Get-UnquotedService`)
 	
