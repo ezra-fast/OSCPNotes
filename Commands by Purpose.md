@@ -1341,6 +1341,7 @@ Get-NetUser | select cn
 Get-Netuser | select cn,pwdlastset,lastlogon
 Get-NetGroup | select cn
 Get-NetGroup "Domain Admins" | select member
+Get-DomainGroupMember "Domain Admins"
 Get-NetComputer | select operatingsystem,dnshostname
 
 Find-LocalAdminAccess
