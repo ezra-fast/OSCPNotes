@@ -1343,10 +1343,11 @@ Get-NetGroup | select cn
 Get-NetGroup "Domain Admins" | select member
 Get-DomainGroupMember "Domain Admins"
 Get-NetComputer | select operatingsystem,dnshostname
+Resolve-IPAddress 172.16.54.44
 
 Find-LocalAdminAccess
 
-Get-NetSession -ComputerName DC01SRV -Verbose       (this command is unreliable)
+Get-NetSession -ComputerName DC01SRV -Verbose       (this command is unreliable unless you already have admin access of some kind)
 
 Get-NetComputer | select dnshostname,operatingsystem,operatingsystemversion
 
