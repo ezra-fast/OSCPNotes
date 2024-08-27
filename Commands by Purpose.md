@@ -1353,7 +1353,7 @@ Get-NetComputer | select dnshostname,operatingsystem,operatingsystemversion
 
 .\PsLoggedon.exe \\DC01SRV
 
-setspn.exe -L alex_admin          (check if alex_admin has an SPN)
+setspn.exe -L alex_admin          (check if alex_admin has an SPN (which means they are kerberoastable))
 
 Get-NetUser -SPN | select samaccountname,serviceprincipalname
 	- grabs all service accounts, displaying account name and SPN
@@ -1366,6 +1366,14 @@ Convert-SidToName <SID>
 Get-ObjectAcl -Identity "<group-or-user-name>" | ? {$_.ActiveDirectoryRights -eq "GenericAll"} | select SecurityIdentifier,ActiveDirectoryRights
 	- enumerate GenericAll rights on the domain
 	- display SID and rights per object
+
+Get-ObjectAcl -Identity "<group-or-user-name>" | ? {$_.ActiveDirectoryRights -eq "GenericAll"} | select SecurityIdentifier,ActiveDirectoryRights
+	- GenericAll, GenericWrite, WriteOwner, WriteDACL, AllExtendedRights, Self (Self-Membership)
+	- Convert-SidToName <SID>
+
+Find-InterestingDomainAcl
+
+Find-InterestingDomainAcl -Domain dev.testlab.local -ResolveGUIDs
 
 "<SID>","<SID>","<SID>" | Convert-SidToName
 
