@@ -1,4 +1,4 @@
-root in the default username for mysql connections; ALWAYS try root as the username
+root in the default username for mysql connections; ALWAYS try root as the username    --> define('DB_SERVER_USERNAME', ''); means the username is root
 
 use masscan to discover all TCP/UDP ports
 
