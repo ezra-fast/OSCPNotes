@@ -152,6 +152,8 @@ PostgreSQL:
 	
 	`ffuf -u https://arctic.htb:8500/FUZZ -w /usr/share/wordlists/dirbuster/directory-list-lowercase-2.3-medium.txt  -t 100 -recursion -recursion-depth 3 -r -v`
 
+	`gobuster dir -u "http://192.168.153.224:8000/" -x .txt,.php,.ini,.doc,.pptx,.pdf -w /usr/share/wordlists/seclists/Discovery/Web-Content/big.txt`
+
 	look in /sitemap.xml and /robots.txt for resources to examine
 	check the output of the wappalyzer browser extension 
 	
