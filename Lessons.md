@@ -1,5 +1,7 @@
 root in the default username for mysql connections; ALWAYS try root as the username    --> define('DB_SERVER_USERNAME', ''); means the username is root
 
+feroxbuster often misses files; use gobuster to find directories and once you're out of directories, use gobuster with -x
+
 use masscan to discover all TCP/UDP ports
 
 always spray null credentials on SMB/Windows hosts
