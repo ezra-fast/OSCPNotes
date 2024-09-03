@@ -691,12 +691,14 @@ c $1 $3 $7 $#
  	1. `services.msc, Get-Service, Get-CimInstance`
 
  	2. `Get-CimInstance -ClassName win32_service | Select Name,State,PathName`							(enumerate all services)
+
+  	3. `sc qc DevService`														(query the service to find its binary path)
 	
- 	3. `Get-CimInstance -ClassName win32_service | Select Name,State,PathName | Where-Object {$_.State-like 'Running'}`            (enumerate running services)
+ 	4. `Get-CimInstance -ClassName win32_service | Select Name,State,PathName | Where-Object {$_.State-like 'Running'}`            (enumerate running services)
 	
- 	4. `icacls "C:\xampp\apache\bin\httpd.exe"`            (enumerate service executable permissions)
+ 	5. `icacls "C:\xampp\apache\bin\httpd.exe"`            (enumerate service executable permissions)
 	
- 	5. replacing a service binary ('F' permissions on a service binary):            
+ 	6. replacing a service binary ('F' permissions on a service binary):            
 	
   		1. (`Get-ModifiableServiceFile`  `Get-ModifiableService`)
 		
@@ -722,7 +724,7 @@ c $1 $3 $7 $#
 		
   		6. `runas /user:added_user cmd.exe`
 	
- 	6. hijacking a (service's) required DLL:           (`Find-PathDLLHijack`)
+ 	7. hijacking a (service's) required DLL:           (`Find-PathDLLHijack`)
 	
   		1. `icacls TargetService.exe`        
 		
@@ -750,7 +752,7 @@ c $1 $3 $7 $#
 		
   		7. `Restart-Service TargetService`
 	
- 	7. unquoted service paths:                         (`Get-UnquotedService`)
+ 	8. unquoted service paths:                         (`Get-UnquotedService`)
 	
   		1. vulnerability: spaces within the path to the service binary, no quotes around the path to the service binary, write permissions on one of the parent directories of the service binary's working directory
 		
@@ -764,7 +766,7 @@ c $1 $3 $7 $#
 		
   		5. `Restart-Service TargetService`         (this may show an error on success)
 	
- 	8. abusing scheduled tasks:
+ 	9. abusing scheduled tasks:
 	
   		1. `Get-ScheduledTask`
 		
@@ -780,7 +782,7 @@ c $1 $3 $7 $#
 			
    			2. [malicious binary](https://github.com/ezra-fast/OSCPPrep/blob/master/Windows/AddUser.c)
 	
- 	9. abusing user's assigned privileges:
+ 	10. abusing user's assigned privileges:
 	
   		1. look for:
 		
