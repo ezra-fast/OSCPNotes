@@ -8,6 +8,8 @@ search for other database usernames passwords using grep
 
 Enumerate all services, not just running services
 
+Use PowerUp.ps1 to enumerate DLL hijacking, service binary replacement, and unquoted service paths
+
 Always add any kind of virtual routing/name resolution to /etc/hosts, even if it is not needed
 
 Umbraco alternative webroot can be found at: umbraco/bin/Debug/net6.0/publish/wwwroot/
