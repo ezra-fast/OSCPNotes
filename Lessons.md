@@ -6,6 +6,8 @@ search for other database usernames passwords using grep
 
         define('DB_SERVER_USERNAME'
 
+Enumerate all services, not just running services
+
 Always add any kind of virtual routing/name resolution to /etc/hosts, even if it is not needed
 
 Umbraco alternative webroot can be found at: umbraco/bin/Debug/net6.0/publish/wwwroot/
