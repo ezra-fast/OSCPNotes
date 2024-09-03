@@ -689,12 +689,14 @@ c $1 $3 $7 $#
 3. Windows Services for privilege escalation:
 
  	1. `services.msc, Get-Service, Get-CimInstance`
+
+ 	2. `Get-CimInstance -ClassName win32_service | Select Name,State,PathName`							(enumerate all services)
 	
- 	2. `Get-CimInstance -ClassName win32_service | Select Name,State,PathName | Where-Object {$_.State-like 'Running'}`            (enumerate running services)
+ 	3. `Get-CimInstance -ClassName win32_service | Select Name,State,PathName | Where-Object {$_.State-like 'Running'}`            (enumerate running services)
 	
- 	3. `icacls "C:\xampp\apache\bin\httpd.exe"`            (enumerate service executable permissions)
+ 	4. `icacls "C:\xampp\apache\bin\httpd.exe"`            (enumerate service executable permissions)
 	
- 	4. replacing a service binary ('F' permissions on a service binary):            
+ 	5. replacing a service binary ('F' permissions on a service binary):            
 	
   		1. (`Get-ModifiableServiceFile`  `Get-ModifiableService`)
 		
