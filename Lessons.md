@@ -6,6 +6,10 @@ search for other database usernames passwords using grep
 
         define('DB_SERVER_USERNAME'
 
+Always add any kind of virtual routing/name resolution to /etc/hosts, even if it is not needed
+
+Umbraco alternative webroot can be found at: umbraco/bin/Debug/net6.0/publish/wwwroot/
+
 feroxbuster often misses files; use gobuster to find directories and once you're out of directories, use gobuster with -x
 
 use masscan to discover all TCP/UDP ports
