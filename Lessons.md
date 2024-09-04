@@ -6,6 +6,12 @@ search for other database usernames passwords using grep
 
         define('DB_SERVER_USERNAME'
 
+Port scans may not properly pick up UDP ports; manually try to detect tftp running on port 69 with:
+
+        nmap -n -Pn -sU -p69 -sV --script tftp-enum 192.168.228.222
+
+        admin/tftp/tftp_transfer_util
+
 Enumerate all services, not just running services
 
 Use PowerUp.ps1 to enumerate DLL hijacking, service binary replacement, and unquoted service paths
