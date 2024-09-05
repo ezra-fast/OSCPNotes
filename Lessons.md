@@ -22,6 +22,8 @@ VNC runs on port 5900 and 5901 --> ALWAYS check port 5901
 
 Always add any kind of virtual routing/name resolution to /etc/hosts, even if it is not needed
 
+loot literally every single user/home/config/program folder that is not native to Windows/Linux. look for .ini, .conf, .config, .txt, etc.
+
 Umbraco alternative webroot can be found at: umbraco/bin/Debug/net6.0/publish/wwwroot/
 
 feroxbuster often misses files; use gobuster to find directories and once you're out of directories, use gobuster with -x
