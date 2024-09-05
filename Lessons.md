@@ -16,6 +16,8 @@ Enumerate all services, not just running services
 
 Use PowerUp.ps1 to enumerate DLL hijacking, service binary replacement, and unquoted service paths
 
+VNC runs on port 5900 and 5901 --> ALWAYS check port 5901
+
 /usr/share/wordlists/fasttrack.txt can be used to crack if rockyou.txt is exhausted
 
 Always add any kind of virtual routing/name resolution to /etc/hosts, even if it is not needed
