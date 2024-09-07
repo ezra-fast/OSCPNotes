@@ -828,12 +828,16 @@ c $1 $3 $7 $#
  	7. `ip a`
 	
  	8. `route && routel`
+
+  	9. `tcpdump -vv -i ens192 | grep -E 'ass|oot|ser'`			(monitor traffic for secrets)
+  
+   	10. `netstat -tunlp`	
 	
- 	9. `ss -anp`                              (list connections and their processes)
+ 	11. `ss -anp`                              (list connections and their processes)
 	
   		1. `netstat -anop`
 	
- 	10. `cat /etc/iptables/rules.v4`       (dump IPv4 rules)
+ 	12. `cat /etc/iptables/rules.v4`       (dump IPv4 rules)
 	
   		1. `cat /etc/iptables | grep iptables-persistent`
 		
@@ -841,77 +845,77 @@ c $1 $3 $7 $#
 		
   		3. `history | grep iptables-restore`
 	
- 	11. `ls -alh /etc/cron*`
+ 	13. `ls -alh /etc/cron*`
 	
- 	12. `cat /etc/crontab`
+ 	14. `cat /etc/crontab`
 	
- 	13. `crontab -l`
+ 	15. `crontab -l`
 	
- 	14. `sudo crontab -l`
+ 	16. `sudo crontab -l`
 	
- 	15. `grep "CRON" /var/log/syslog`                     (inspect the cron log file)
+ 	17. `grep "CRON" /var/log/syslog`                     (inspect the cron log file)
 	
   		1. `cat /var/log/cron.log`
 	
- 	16. `dpkg -l`
+ 	18. `dpkg -l`
 	
- 	17. `find / -writable -type d 2>/dev/null`
+ 	19. `find / -writable -type d 2>/dev/null`
 	
- 	18. `find / -writable -type f 2>/dev/null`
+ 	20. `find / -writable -type f 2>/dev/null`
 	
- 	19. `cat /etc/fstab`                     (list drives that will be mounted at boot time)
+ 	21. `cat /etc/fstab`                     (list drives that will be mounted at boot time)
 	
- 	20. `mount`                                  (mounted filesystems)
+ 	22. `mount`                                  (mounted filesystems)
 	
- 	21. `lslbk`                                  (available disks)
+ 	23. `lslbk`                                  (available disks)
 	
- 	22. `lsmod`                                  (enumerate loaded kernel modules)
+ 	24. `lsmod`                                  (enumerate loaded kernel modules)
 	
   		1. `/sbin/modinfo KernelModule`
 	
- 	23. `find / -perm -u=s type f 2>/dev/null`                  (SUID files)
+ 	25. `find / -perm -u=s type f 2>/dev/null`                  (SUID files)
 	
- 	24. `getcap -r / 2>/dev/null`                                          (capabilities; look for +ep)
+ 	26. `getcap -r / 2>/dev/null`                                          (capabilities; look for +ep)
 	
- 	25. `env`
+ 	27. `env`
 	
- 	26. `history && cat /home/<user>/.bash_history`
+ 	28. `history && cat /home/<user>/.bash_history`
 	
- 	27. `hydra -l root -P /usr/share/wordlists/rockyou.txt -t 4 ssh -V`
+ 	29. `hydra -l root -P /usr/share/wordlists/rockyou.txt -t 4 ssh -V`
 	
- 	28. `sudo -l`
+ 	30. `sudo -l`
 	
- 	29. `sudo -i`                                (run a shell as root with root env)
+ 	31. `sudo -i`                                (run a shell as root with root env)
 	
- 	30. `su -`                                      (switch with new user's env)
+ 	32. `su -`                                      (switch with new user's env)
 	
- 	31. `su root`                                (switch to root without switching env)
+ 	33. `su root`                                (switch to root without switching env)
 	
- 	32. `sudo -s`                                (run as root without root env)
+ 	34. `sudo -s`                                (run as root without root env)
 	
- 	33. `grep --color=auto -rnw '/' -ie "PASSWORD" --color=always 2> /dev/null`
+ 	35. `grep --color=auto -rnw '/' -ie "PASSWORD" --color=always 2> /dev/null`
 	
- 	34. `locate password | more`
+ 	36. `locate password | more`
 	
- 	35. `find / -name authorized_keys 2> /dev/null`
+ 	37. `find / -name authorized_keys 2> /dev/null`
 	
- 	36. `find / -name id_* 2> /dev/null`
+ 	38. `find / -name id_* 2> /dev/null`
 	
- 	37. `find / -name *.pub* 2> /dev/null`
+ 	39. `find / -name *.pub* 2> /dev/null`
 	
- 	38. `find / -name *.bak (*backup*, *old*)`
+ 	40. `find / -name *.bak (*backup*, *old*)`
 	
- 	39. `ls -alh /tmp/`
+ 	41. `ls -alh /tmp/`
 	
- 	40. `watch -n 1 "ps -aux | grep pass"`               
+ 	42. `watch -n 1 "ps -aux | grep pass"`               
 	
   		1. (monitor processes/services for passwords in real time)
 	
- 	41. `sudo tcpdump -i lo -A | grep "pass"` 
+ 	43. `sudo tcpdump -i lo -A | grep "pass"` 
 	
   		1. (monitor loopback traffic (local services) for passwords in real time)
 	
- 	42. `ls -alh /etc/passwd /etc/shadow /etc/sudoers`
+ 	44. `ls -alh /etc/passwd /etc/shadow /etc/sudoers`
 	
   		1. any of these files are writable = vulnerable
 
