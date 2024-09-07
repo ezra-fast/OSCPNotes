@@ -16,7 +16,7 @@ Enumerate all services, not just running services
 
 Use PowerUp.ps1 to enumerate DLL hijacking, service binary replacement, and unquoted service paths
 
-sniff all network interfaces for secrets; port 514 is syslog; if tcpdump is on the system, use it
+sniff all network interfaces for secrets; port 514 is syslog; if tcpdump is on the system, use it            --> tcpdump -vv -i ens192 | grep -E 'ass|oot|ser'
 
 VNC runs on port 5900 and 5901 --> ALWAYS check port 5901 for VNC
 
