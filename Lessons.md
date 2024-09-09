@@ -1,5 +1,7 @@
 root in the default username for mysql connections; ALWAYS try root as the username    --> define('DB_SERVER_USERNAME', ''); means the username is root
 
+Always check the web root for .git folder
+
 search for other database usernames passwords using grep
     
         grep -r "dbname=" / 2>/dev/null
