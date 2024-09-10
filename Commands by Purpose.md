@@ -36,6 +36,8 @@
 
 `sudo masscan -p1-65535,U1-65535 192.168.228.222 --rate=1000 -e tun0`
 
+`sudo masscan -pU:1-65535 192.168.182.141 --rate=1000 -e tun0`					--> UDP port scanning with masscan
+
 `Test-NetConnection -Port 445 192.168.45.33`
 
 `1..1024 | % {echo ((New-Object Net.Sockets.TcpClient).Connect("192.168.44.30", $_)) "TCP port $_ is open"} 2>$null` 
