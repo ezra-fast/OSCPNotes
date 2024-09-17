@@ -2,6 +2,8 @@ root in the default username for mysql connections; ALWAYS try root as the usern
 
 Always check the web root for .git folder
 
+Always try the username as the password
+
 search for other database usernames passwords using grep
     
         grep -r "dbname=" / 2>/dev/null
