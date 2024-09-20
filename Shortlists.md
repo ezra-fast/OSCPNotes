@@ -6,6 +6,8 @@
 4. ASREP roastable users
 5. domain users, groups, sessions
 6. SharpHound.ps1 ingestion
+7. No credentials? Try to enumerate as much as possible using LDAP
+	a. kerbrute userenum --dc dc.domain.com -d domain.com /usr/share/seclists/Usernames/xato-net-10-million-usernames.txt
 
 
 ```
