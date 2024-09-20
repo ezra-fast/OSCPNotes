@@ -20,6 +20,10 @@
 
 			a. nxc smb <ip> -u usernames.txt -p usernames.txt
 
+10. Enumerate for DCSync/Replication privileges
+
+			a. Get-ObjectAcl -DistinguishedName "dc=dollarcorp,dc=moneycorp,dc=local" -ResolveGUIDs | ?{($_.ObjectType -match 'replication-get') -or ($_.ActiveDirectoryRights -match 'GenericAll') -or ($_.ActiveDirectoryRights -match 'WriteDacl')}
+
 
 ```
 crackmapexec smb internal.txt -u "anonymous" -p ""
