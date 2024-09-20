@@ -3360,3 +3360,11 @@ whoami && type C:\Users\Administrator\Desktop\proof.txt && ipconfig
 
 ```
 
+**Extra Notes**
+
+```
+[as an authenticated domain user]
+
+$sid = Convert-NameToSid $OWNED_USERNAME Get-DomainObjectAcl -Identity * -ResolveGuids | Where-Object { $_.SecurityIdentifier -eq $sid } 				(enumerate for any domain object containing the current user's SID as an ACE)
+
+```
