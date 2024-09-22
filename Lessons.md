@@ -1,5 +1,7 @@
 root in the default username for mysql connections; ALWAYS try root as the username    --> define('DB_SERVER_USERNAME', ''); means the username is root
 
+Always look for unattend.xml
+
 Always enumerate for ConsoleHost_history.txt as part of post-exploitation
 
 Always check the web root for .git folder
