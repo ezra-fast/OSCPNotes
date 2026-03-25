@@ -759,14 +759,18 @@ c $1 $3 $7 $#
   		1. vulnerability: spaces within the path to the service binary, no quotes around the path to the service binary, write permissions on one of the parent directories of the service binary's working directory
 		
   		2. `Get-CimInstance -ClassName win32_service | Select Name,State,PathName` (enumerate running and stopped services)
+  
+    	3. `Get-CimInstance Win32_Service | Where-Object { $_.PathName -and $_.PathName -notmatch "C:\\Windows\\" -and $_.PathName -notmatch '"' } | Format-Table Name, PathName -AutoSize`
+
+			a. (windows 11-compatible powershell equivalent of the wmic command found below)
 		
-  		3. `wmic service get name,pathname |  findstr /i /v "C:\Windows\\" | findstr /i /v """`         
+  		4. `wmic service get name,pathname |  findstr /i /v "C:\Windows\\" | findstr /i /v """`         
 		
    			1. (enumerate unquoted service paths for services outside the System32 directory; does not check for spaces in the binary paths)
 		
-  		4. Compile a [malicious service](https://github.com/ezra-fast/OSCPPrep/blob/master/Windows/malicious_service.c) with the name as the first word in a (writable) directory path with a space in it (ex: C:\Program Files\Enterprise.exe)
+  		5. Compile a [malicious service](https://github.com/ezra-fast/OSCPPrep/blob/master/Windows/malicious_service.c) with the name as the first word in a (writable) directory path with a space in it (ex: C:\Program Files\Enterprise.exe)
 		
-  		5. `Restart-Service TargetService`         (this may show an error on success)
+  		6. `Restart-Service TargetService`         (this may show an error on success)
 	
  	9. abusing scheduled tasks:
 	
